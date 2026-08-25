@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — BOOST STORE</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            title: ['Cinzel', 'serif'],
+            sans: ['Montserrat', 'sans-serif'],
+          },
+          colors: {
+            gold: {
+              DEFAULT: '#D4AF37',
+              dark: '#8C6D1F',
+              accent: '#E5C06E'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #050608;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.12) 0%, transparent 50%),
+        radial-gradient(rgba(212, 175, 55, 0.12) 1px, transparent 1px);
+      background-size: 100% 100%, 28px 28px;
+    }
+    .card-luxury {
+      background: linear-gradient(180deg, #0f1219 0%, #07080c 100%);
+    }
+    .frame-gold {
+      border: 1px solid #d4af37;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+    }
+    .glow-gold {
+      filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6));
+    }
+  </style>
+</head>
+<body class="text-gray-200 font-sans antialiased min-h-screen flex flex-col justify-between p-3 sm:p-6">
+
+  <svg class="hidden">
+    <defs>
+      <linearGradient id="royalGoldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#FFFFFF" />
+        <stop offset="20%" stop-color="#FFF5D6" />
+        <stop offset="45%" stop-color="#E5C06E" />
+        <stop offset="70%" stop-color="#C59B27" />
+        <stop offset="100%" stop-color="#684705" />
+      </linearGradient>
+      <linearGradient id="crownGemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFFDF5" />
+        <stop offset="50%" stop-color="#FFD700" />
+        <stop offset="100%" stop-color="#AA7C11" />
+      </linearGradient>
+      <linearGradient id="crownBaseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#7A5307" />
+        <stop offset="30%" stop-color="#FDF0CD" />
+        <stop offset="50%" stop-color="#E5C06E" />
+        <stop offset="70%" stop-color="#FDF0CD" />
+        <stop offset="100%" stop-color="#7A5307" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- ADMIN HEADER -->
+  <header class="card-luxury frame-gold rounded-2xl p-4 sm:p-5 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <div class="flex items-center space-x-3">
+      <div class="relative w-10 h-10 flex items-center justify-center glow-gold">
+        <svg viewBox="0 0 200 160" class="w-full h-full">
+          <path d="M20,135 L180,135 L165,65 L125,95 L100,35 L75,95 L35,65 Z" fill="url(#royalGoldGrad)" stroke="#FFF8DC" stroke-width="4" stroke-linejoin="round"/>
+          <rect x="20" y="130" width="160" height="20" rx="4" fill="url(#crownBaseGrad)" stroke="#FFF8DC" stroke-width="3"/>
+          <circle cx="20" cy="65" r="7" fill="url(#crownGemGrad)" stroke="#FFF" stroke-width="2"/>
+          <circle cx="100" cy="30" r="10" fill="url(#crownGemGrad)" stroke="#FFF" stroke-width="2"/>
+          <circle cx="180" cy="65" r="7" fill="url(#crownGemGrad)" stroke="#FFF" stroke-width="2"/>
+        </svg>
+      </div>
+
+      <div>
+        <h1 class="text-base sm:text-xl font-black text-gold uppercase tracking-wider font-title">BOOST STORE — PANEL ADMIN</h1>
+        <p class="text-[11px] text-gray-400">Pusat Manajemen Toko, Stok, QRIS & Testimoni (Cloud Supabase)</p>
+      </div>
+    </div>
+
+    <!-- KONTROL OPERASIONAL TOKO & NAVIGASI TAB -->
+    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+      <div class="flex items-center bg-black/80 border border-gray-700 p-1 rounded-xl mr-1">
+        <button id="btn-store-open" onclick="setStoreStatus('open')" class="px-2.5 py-1 text-[10px] font-bold rounded-lg transition">
+          <i class="fa-solid fa-door-open mr-1"></i> Buka
+        </button>
+        <button id="btn-store-closed" onclick="setStoreStatus('closed')" class="px-2.5 py-1 text-[10px] font-bold rounded-lg transition">
+          <i class="fa-solid fa-door-closed mr-1"></i> Tutup
+        </button>
+      </div>
+
+      <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <button onclick="switchTab('orders')" id="btn-tab-orders" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition">Pesanan</button>
+        <button onclick="switchTab('stocks')" id="btn-tab-stocks" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition">Kelola Stok & Harga</button>
+        <button onclick="switchTab('qris')" id="btn-tab-qris" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1">
+          <i class="fa-solid fa-qrcode text-gold text-[10px]"></i> QRIS
+        </button>
+        <button onclick="switchTab('testimonials')" id="btn-tab-testimonials" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1">
+          <i class="fa-solid fa-star text-gold text-[10px]"></i> Testimoni
+        </button>
+        <button onclick="switchTab('chats')" id="btn-tab-chats" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition">Live Chat</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 w-full max-w-7xl mx-auto card-luxury frame-gold rounded-2xl p-4 sm:p-6 flex flex-col relative overflow-hidden min-h-[550px]">
+    
+    <!-- TAB 1: KELOLA PESANAN -->
+    <div id="tab-orders" class="flex-1 overflow-y-auto">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-xs sm:text-sm font-black text-gold uppercase tracking-wider">Daftar Transaksi Masuk</h3>
+        <span class="text-xs text-gray-400" id="total-orders-count">0 Pesanan</span>
+      </div>
+      <div id="orders-list" class="space-y-3"></div>
+    </div>
+
+    <!-- TAB 2: KELOLA STOK & UBAH HARGA -->
+    <div id="tab-stocks" class="hidden flex-1 overflow-y-auto space-y-6">
+      <div class="bg-black/60 border border-gold/40 p-3.5 rounded-xl">
+        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
+          <h4 class="text-xs sm:text-sm font-bold text-gold uppercase"><i class="fa-solid fa-cart-shopping mr-1"></i> 1. Kategori Paket Ekonomis</h4>
+          <div class="flex gap-1.5">
+            <button onclick="toggleAllCategoryStock('ekonomis', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
+            <button onclick="toggleAllCategoryStock('ekonomis', false)" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Nonaktifkan Semua</button>
+          </div>
+        </div>
+        <div id="stock-group-ekonomis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+      </div>
+
+      <div class="bg-black/60 border border-emerald-500/40 p-3.5 rounded-xl">
+        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
+          <h4 class="text-xs sm:text-sm font-bold text-emerald-400 uppercase"><i class="fa-solid fa-crown mr-1"></i> 2. Kategori Paket Sultan</h4>
+          <div class="flex gap-1.5">
+            <button onclick="toggleAllCategoryStock('sultan', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
+            <button onclick="toggleAllCategoryStock('sultan', false)" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Nonaktifkan Semua</button>
+          </div>
+        </div>
+        <div id="stock-group-sultan" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+      </div>
+
+      <div class="bg-black/60 border border-purple-500/40 p-3.5 rounded-xl">
+        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
+          <h4 class="text-xs sm:text-sm font-bold text-purple-400 uppercase"><i class="fa-solid fa-gem mr-1"></i> 3. Kategori Paket CEO</h4>
+          <div class="flex gap-1.5">
+            <button onclick="toggleAllCategoryStock('ceo', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
+            <button onclick="toggleAllCategoryStock('ceo', false)" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Nonaktifkan Semua</button>
+          </div>
+        </div>
+        <div id="stock-group-ceo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: KELOLA GAMBAR QRIS -->
+    <div id="tab-qris" class="hidden flex-1 overflow-y-auto max-w-xl mx-auto w-full space-y-4">
+      <div class="bg-black/70 border border-gold/40 p-4 sm:p-6 rounded-2xl text-center space-y-4">
+        <div>
+          <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider"><i class="fa-solid fa-qrcode mr-1"></i> Pengaturan QRIS Pembayaran</h3>
+          <p class="text-xs text-gray-400 mt-1">Unggah gambar QRIS terbaru toko Anda.</p>
+        </div>
+
+        <div class="bg-white p-3 rounded-2xl inline-block border-2 border-gold max-w-[240px] shadow-lg">
+          <img id="admin-qris-preview" src="qris-boost.jpeg" alt="QRIS Boost Store" class="max-h-[220px] w-auto mx-auto rounded-lg object-contain" />
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-gray-300">Pilih Gambar QRIS Baru (Format JPG / PNG):</label>
+          <input type="file" id="admin-qris-input" accept="image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-gray-800 file:text-gold cursor-pointer" />
+        </div>
+
+        <button onclick="saveCustomQris()" class="w-full bg-gradient-to-r from-gold to-yellow-500 text-black font-black py-2.5 rounded-lg text-xs uppercase tracking-wider hover:brightness-110">
+          <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan & Perbarui QRIS
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 4: KELOLA TESTIMONI PELANGGAN -->
+    <div id="tab-testimonials" class="hidden flex-1 overflow-y-auto space-y-4">
+      <div class="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-gray-800">
+        <div>
+          <h3 class="text-xs sm:text-sm font-black text-gold uppercase tracking-wider">Testimoni Masuk Dari Pelanggan</h3>
+          <p class="text-[10px] text-gray-400">Daftar ulasan kejujuran, rating bintang, serta bukti screenshot dari pelanggan.</p>
+        </div>
+        <span class="text-xs text-gray-400" id="total-testi-count">0 Total Testimoni</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-black/60 border border-gold/40 p-3.5 rounded-xl flex flex-col">
+          <div class="flex justify-between items-center pb-2 mb-3 border-b border-gold/20">
+            <h4 class="text-xs font-bold text-gold uppercase flex items-center gap-1.5">
+              <i class="fa-solid fa-crown text-yellow-400"></i> Ulasan Bintang 5
+            </h4>
+            <span id="admin-count-star-5" class="bg-yellow-500/20 text-yellow-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-yellow-500/30">0</span>
+          </div>
+          <div id="admin-testi-list-5" class="space-y-3 overflow-y-auto max-h-[460px] pr-1"></div>
+        </div>
+
+        <div class="bg-black/60 border border-gray-800 p-3.5 rounded-xl flex flex-col">
+          <div class="flex justify-between items-center pb-2 mb-3 border-b border-gray-800">
+            <h4 class="text-xs font-bold text-gray-300 uppercase flex items-center gap-1.5">
+              <i class="fa-solid fa-comment-dots text-blue-400"></i> Masukan / Kritik (Bintang 1 - 4)
+            </h4>
+            <span id="admin-count-star-low" class="bg-gray-800 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-700">0</span>
+          </div>
+          <div id="admin-testi-list-low" class="space-y-3 overflow-y-auto max-h-[460px] pr-1"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: LIVE CHAT MULTI-ROOM -->
+    <div id="tab-chats" class="hidden flex-1 grid grid-cols-1 md:grid-cols-3 gap-3 overflow-hidden h-[500px]">
+      <div class="border border-gray-800 rounded-xl p-2.5 bg-black/60 flex flex-col h-full overflow-hidden">
+        <h4 class="text-xs font-black text-gold uppercase mb-2">Daftar Chat Masuk</h4>
+        <div id="admin-chat-rooms" class="flex-1 overflow-y-auto space-y-1.5 pr-1"></div>
+      </div>
+
+      <div class="md:col-span-2 border border-gray-800 rounded-xl p-3 bg-black/60 flex flex-col h-full overflow-hidden">
+        <div class="flex justify-between items-center pb-2 mb-2 border-b border-gray-800">
+          <div>
+            <span id="chatting-with-label" class="font-bold text-xs text-white">Pilih sesi chat...</span>
+            <span id="chatting-status-label" class="text-[9px] text-emerald-400 block"></span>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <button id="btn-end-chat" onclick="endSelectedChat()" class="hidden bg-yellow-600 hover:bg-yellow-500 text-black px-2.5 py-1 rounded text-[10px] font-bold">
+              <i class="fa-solid fa-phone-slash mr-1"></i> Akhiri Sesi
+            </button>
+            <button id="btn-delete-chat" onclick="deleteSelectedChat()" class="hidden bg-red-600 hover:bg-red-500 text-white px-2.5 py-1 rounded text-[10px] font-bold">
+              <i class="fa-solid fa-trash mr-1"></i> Hapus Chat
+            </button>
+          </div>
+        </div>
+
+        <div id="admin-active-messages" class="flex-1 overflow-y-auto space-y-2 p-2.5 bg-black/40 rounded-lg border border-gray-900 text-xs mb-2">
+          <p class="text-gray-500 text-center py-8">Belum ada chat yang dipilih.</p>
+        </div>
+
+        <div id="admin-chat-input-bar" class="hidden flex gap-1.5">
+          <input type="text" id="admin-reply-input" placeholder="Ketik balasan..." class="flex-1 bg-black border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-gold" onkeypress="if(event.key==='Enter') sendAdminChat()" />
+          <button onclick="sendAdminChat()" class="bg-emerald-500 text-black font-bold px-4 py-1.5 rounded-lg text-xs hover:brightness-110">Kirim</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL PREVIEW GAMBAR -->
+  <div id="proof-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center p-3 z-50">
+    <div class="card-luxury frame-gold rounded-2xl max-w-md w-full p-4 relative text-center">
+      <button onclick="closeProofModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <h3 id="proof-modal-title" class="text-xs font-black text-gold uppercase mb-2">Bukti Gambar</h3>
+      <div class="bg-black/60 p-2 rounded-xl border border-gray-800 mb-3 flex items-center justify-center min-h-[220px]">
+        <img id="proof-modal-img" src="" alt="Bukti Gambar" class="max-h-[350px] w-auto rounded-lg object-contain" />
+      </div>
+      <button onclick="closeProofModal()" class="bg-gold text-black font-bold px-5 py-1.5 rounded-lg text-xs uppercase">Tutup</button>
+    </div>
+  </div>
+
+  <footer class="text-center text-xs text-gray-500 py-4">
+    &copy; 2026 BOOST STORE — Administration Dashboard System
+  </footer>
+
+  <script>
+    /* SUPABASE URL & ANON KEY */
+    const SUPABASE_URL = "https://ohjebpvdbaoejpnoaeaa.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oamVicHZkYmFvZWpwbm9hZWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NjMxNTIsImV4cCI6MjEwMzIzOTE1Mn0.BqDKF4D82IkpFmxzxDfGPQ5AwzRF3cmqrkpQiwHUsgo";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let activeAdminRoomId = null;
+
+    async function setStoreStatus(status) {
+      await supabaseClient.from('store_settings').update({ store_status: status }).eq('id', 1);
+      renderStoreStatusControls();
+    }
+
+    async function renderStoreStatusControls() {
+      const { data } = await supabaseClient.from('store_settings').select('store_status').eq('id', 1).single();
+      const status = data ? data.store_status : 'open';
+      const openBtn = document.getElementById('btn-store-open');
+      const closedBtn = document.getElementById('btn-store-closed');
+
+      if(status === 'open') {
+        openBtn.className = 'px-2.5 py-1 text-[10px] font-bold rounded-lg bg-emerald-500 text-black shadow';
+        closedBtn.className = 'px-2.5 py-1 text-[10px] font-bold rounded-lg text-gray-400 hover:text-white';
+      } else {
+        openBtn.className = 'px-2.5 py-1 text-[10px] font-bold rounded-lg text-gray-400 hover:text-white';
+        closedBtn.className = 'px-2.5 py-1 text-[10px] font-bold rounded-lg bg-red-600 text-white shadow animate-pulse';
+      }
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tab-orders').classList.add('hidden');
+      document.getElementById('tab-stocks').classList.add('hidden');
+      document.getElementById('tab-qris').classList.add('hidden');
+      document.getElementById('tab-testimonials').classList.add('hidden');
+      document.getElementById('tab-chats').classList.add('hidden');
+
+      document.getElementById('btn-tab-orders').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition';
+      document.getElementById('btn-tab-stocks').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition';
+      document.getElementById('btn-tab-qris').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1';
+      document.getElementById('btn-tab-testimonials').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1';
+      document.getElementById('btn-tab-chats').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition';
+
+      if(tab === 'orders') {
+        document.getElementById('tab-orders').classList.remove('hidden');
+        document.getElementById('btn-tab-orders').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition';
+        renderOrders();
+      } else if(tab === 'stocks') {
+        document.getElementById('tab-stocks').classList.remove('hidden');
+        document.getElementById('btn-tab-stocks').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition';
+        renderStocks();
+      } else if(tab === 'qris') {
+        document.getElementById('tab-qris').classList.remove('hidden');
+        document.getElementById('btn-tab-qris').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition flex items-center gap-1';
+        loadQrisPreview();
+      } else if(tab === 'testimonials') {
+        document.getElementById('tab-testimonials').classList.remove('hidden');
+        document.getElementById('btn-tab-testimonials').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition flex items-center gap-1';
+        renderAdminTestimonials();
+      } else if(tab === 'chats') {
+        document.getElementById('tab-chats').classList.remove('hidden');
+        document.getElementById('btn-tab-chats').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition';
+        renderChatRooms();
+      }
+    }
+
+    async function loadQrisPreview() {
+      const { data } = await supabaseClient.from('store_settings').select('qris_image').eq('id', 1).single();
+      const qrisImg = data ? data.qris_image : 'qris-boost.jpeg';
+      document.getElementById('admin-qris-preview').src = qrisImg;
+    }
+
+    function saveCustomQris() {
+      const fileInput = document.getElementById('admin-qris-input');
+      if(!fileInput.files.length) return alert('Pilih gambar QRIS terlebih dahulu!');
+      
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        await supabaseClient.from('store_settings').update({ qris_image: e.target.result }).eq('id', 1);
+        loadQrisPreview();
+        alert('Gambar QRIS berhasil diperbarui dan telah diterapkan ke halaman pelanggan!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function renderOrders() {
+      const { data: list } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+      const el = document.getElementById('orders-list');
+      
+      if(!list || list.length === 0) {
+        document.getElementById('total-orders-count').innerText = `0 Pesanan`;
+        el.innerHTML = '<p class="text-gray-500 text-center py-8 text-xs">Belum ada transaksi masuk.</p>';
+        return;
+      }
+
+      document.getElementById('total-orders-count').innerText = `${list.length} Pesanan`;
+
+      el.innerHTML = list.map(o => {
+        let badgeColor = 'bg-yellow-900/40 text-yellow-400 border border-yellow-500';
+        if(o.status === 'Sedang Diproses') badgeColor = 'bg-blue-900/40 text-blue-400 border border-blue-500';
+        if(o.status === 'Robux Dikirim') badgeColor = 'bg-cyan-900/40 text-cyan-400 border border-cyan-500';
+        if(o.status === 'Selesai') badgeColor = 'bg-emerald-900/40 text-emerald-400 border border-emerald-500';
+        if(o.status === 'Dibatalkan') badgeColor = 'bg-red-900/40 text-red-400 border border-red-500';
+
+        const timeStr = new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        return `
+          <div class="bg-black/70 border border-gray-800 p-3 sm:p-4 rounded-xl space-y-2">
+            <div class="flex justify-between items-center gap-1">
+              <div>
+                <span class="font-black text-gold text-xs sm:text-sm">${o.id}</span>
+                <span class="text-[10px] text-gray-400 ml-1">(${timeStr})</span>
+              </div>
+              <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded ${badgeColor}">${o.status}</span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[11px] sm:text-xs text-gray-300 gap-1.5">
+              <div>
+                Roblox: <span class="text-white font-bold">${o.username}</span> | 
+                <span class="text-emerald-400 font-bold">${o.product}</span> (Rp ${Number(o.price).toLocaleString('id-ID')})
+              </div>
+              <div>
+                <button onclick="viewImageModal('${o.proof_image}', 'Bukti Transfer - ${o.id}')" class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 text-gold border border-gold/40 px-2.5 py-1 rounded text-[10px] font-bold">
+                  <i class="fa-solid fa-image mr-1"></i> Bukti Transfer
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-gray-900 flex flex-wrap gap-1 items-center justify-between">
+              <div class="flex flex-wrap gap-1">
+                <button onclick="updateOrderStatus('${o.id}', 'Sedang Diproses')" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded text-[9px] font-bold">Proses</button>
+                <button onclick="updateOrderStatus('${o.id}', 'Robux Dikirim')" class="bg-cyan-600 hover:bg-cyan-500 text-black px-2 py-1 rounded text-[9px] font-bold">Kirim</button>
+                <button onclick="updateOrderStatus('${o.id}', 'Selesai')" class="bg-emerald-500 hover:bg-emerald-400 text-black px-2 py-1 rounded text-[9px] font-bold">Selesai</button>
+                <button onclick="updateOrderStatus('${o.id}', 'Dibatalkan')" class="bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded text-[9px] font-bold">Batal (Typo/Invalid)</button>
+              </div>
+              <button onclick="deleteOrderHistory('${o.id}')" class="bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-700/50 px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
+                <i class="fa-solid fa-trash-can text-[9px]"></i> Hapus Riwayat
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function deleteOrderHistory(orderId) {
+      if(!confirm(`Apakah Anda yakin ingin menghapus riwayat pesanan ${orderId}?`)) return;
+      await supabaseClient.from('orders').delete().eq('id', orderId);
+      renderOrders();
+    }
+
+    async function updateOrderStatus(id, newStatus) {
+      await supabaseClient.from('orders').update({ status: newStatus }).eq('id', id);
+      renderOrders();
+    }
+
+    async function renderAdminTestimonials() {
+      const { data: list } = await supabaseClient.from('testimonials').select('*').order('created_at', { ascending: false });
+      const box5 = document.getElementById('admin-testi-list-5');
+      const boxLow = document.getElementById('admin-testi-list-low');
+
+      if(!list) return;
+
+      const star5List = list.filter(t => t.rating === 5);
+      const starLowList = list.filter(t => t.rating < 5);
+
+      document.getElementById('total-testi-count').innerText = `${list.length} Total Testimoni`;
+      document.getElementById('admin-count-star-5').innerText = `${star5List.length} Ulasan`;
+      document.getElementById('admin-count-star-low').innerText = `${starLowList.length} Ulasan`;
+
+      if(star5List.length === 0) {
+        box5.innerHTML = '<p class="text-gray-500 text-center py-8 text-xs">Belum ada ulasan Bintang 5.</p>';
+      } else {
+        box5.innerHTML = star5List.map(t => createAdminTestiCard(t, true)).join('');
+      }
+
+      if(starLowList.length === 0) {
+        boxLow.innerHTML = '<p class="text-gray-500 text-center py-8 text-xs">Belum ada ulasan Bintang 1 - 4.</p>';
+      } else {
+        boxLow.innerHTML = starLowList.map(t => createAdminTestiCard(t, false)).join('');
+      }
+    }
+
+    function createAdminTestiCard(t, isFiveStar) {
+      let starsHtml = '';
+      for(let i = 1; i <= 5; i++) {
+        if(i <= t.rating) {
+          starsHtml += `<i class="fa-solid fa-star ${isFiveStar ? 'text-yellow-400' : 'text-yellow-500'}"></i>`;
+        } else {
+          starsHtml += `<i class="fa-solid fa-star text-gray-700"></i>`;
+        }
+      }
+
+      let imageHtml = '';
+      if(t.robux_proof) {
+        imageHtml = `
+          <div class="pt-1">
+            <button onclick="viewImageModal('${t.robux_proof}', 'Screenshot Robux Masuk - ${t.username}')" class="w-full bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/40 text-[10px] font-bold py-1 px-2 rounded flex items-center justify-center gap-1 truncate">
+              <i class="fa-solid fa-mobile-screen-button"></i> Screenshot Robux Masuk (Full Screen)
+            </button>
+          </div>
+        `;
+      } else {
+        imageHtml = `<div class="text-[10px] text-gray-500 italic pt-0.5">(Tanpa lampiran gambar)</div>`;
+      }
+
+      const feedbackContent = t.feedback ? `"${t.feedback}"` : `<span class="text-gray-500 italic">(Pelanggan memberikan rating bintang saja tanpa ulasan teks)</span>`;
+
+      return `
+        <div class="bg-black/80 border ${isFiveStar ? 'border-gold/30' : 'border-gray-800'} p-3 rounded-xl space-y-2 text-xs">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="font-black text-white text-xs">${t.username}</span>
+              <span class="text-[10px] text-gray-400 block">${t.product} • <strong class="text-gold">${t.order_id}</strong></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="text-[11px] flex space-x-0.5">${starsHtml}</div>
+              <button onclick="deleteTestimonial('${t.id}')" title="Hapus Testimoni" class="text-red-400 hover:text-red-300 ml-2">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-black/50 p-2 rounded-lg border border-gray-900 text-gray-300 text-[11px]">
+            ${feedbackContent}
+          </div>
+
+          ${imageHtml}
+        </div>
+      `;
+    }
+
+    async function deleteTestimonial(testiId) {
+      if(!confirm('Apakah Anda yakin ingin menghapus ulasan testimoni ini?')) return;
+      await supabaseClient.from('testimonials').delete().eq('id', testiId);
+      renderAdminTestimonials();
+    }
+
+    function viewImageModal(src, title) {
+      if(!src) return alert('Gambar tidak ditemukan!');
+      document.getElementById('proof-modal-img').src = src;
+      document.getElementById('proof-modal-title').innerText = title || 'Pratinjau Gambar';
+      document.getElementById('proof-modal').classList.remove('hidden');
+      document.getElementById('proof-modal').classList.add('flex');
+    }
+
+    function closeProofModal() {
+      document.getElementById('proof-modal').classList.add('hidden');
+      document.getElementById('proof-modal').classList.remove('flex');
+    }
+
+    async function renderStocks() {
+      const { data: products } = await supabaseClient.from('products').select('*').order('display_order', { ascending: true });
+      const ekoBox = document.getElementById('stock-group-ekonomis');
+      const sltBox = document.getElementById('stock-group-sultan');
+      const ceoBox = document.getElementById('stock-group-ceo');
+
+      ekoBox.innerHTML = '';
+      sltBox.innerHTML = '';
+      ceoBox.innerHTML = '';
+
+      if(!products) return;
+
+      products.forEach(p => {
+        const itemHtml = `
+          <div class="bg-black/80 border border-gray-800 p-2.5 rounded-lg flex flex-col gap-2">
+            <div class="flex justify-between items-center">
+              <div class="font-bold text-white text-xs">${p.robux} Robux</div>
+              <button onclick="toggleProductStock('${p.id}', ${!p.active})" class="px-2 py-0.5 rounded text-[9px] font-bold transition ${p.active !== false ? 'bg-emerald-500 text-black' : 'bg-red-600 text-white'}">
+                ${p.active !== false ? 'Tersedia' : 'Habis'}
+              </button>
+            </div>
+            <div class="flex items-center gap-1.5 pt-1 border-t border-gray-900">
+              <span class="text-[10px] text-gray-400 font-bold">Rp</span>
+              <input type="number" id="price-input-${p.id}" value="${p.price}" class="flex-1 bg-black border border-gray-700 rounded px-1.5 py-1 text-xs text-gold font-bold focus:outline-none focus:border-gold" />
+              <button onclick="saveProductPrice('${p.id}')" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-bold px-2 py-1 rounded transition">
+                Simpan
+              </button>
+            </div>
+          </div>
+        `;
+
+        if(p.tier === 'ekonomis') ekoBox.innerHTML += itemHtml;
+        if(p.tier === 'sultan') sltBox.innerHTML += itemHtml;
+        if(p.tier === 'ceo') ceoBox.innerHTML += itemHtml;
+      });
+    }
+
+    async function saveProductPrice(productId) {
+      const inputEl = document.getElementById(`price-input-${productId}`);
+      const newPrice = parseInt(inputEl.value, 10);
+      if(isNaN(newPrice) || newPrice <= 0) return alert('Harga harus berupa angka valid di atas 0!');
+
+      await supabaseClient.from('products').update({ price: newPrice }).eq('id', productId);
+      alert('Harga berhasil disimpan & langsung diperbarui ke seluruh dunia!');
+      renderStocks();
+    }
+
+    async function toggleProductStock(productId, newStatus) {
+      await supabaseClient.from('products').update({ active: newStatus }).eq('id', productId);
+      renderStocks();
+    }
+
+    async function toggleAllCategoryStock(tierName, status) {
+      await supabaseClient.from('products').update({ active: status }).eq('tier', tierName);
+      renderStocks();
+    }
+
+    async function renderChatRooms() {
+      const { data: rooms } = await supabaseClient.from('chat_rooms').select('*').order('updated_at', { ascending: false });
+      const container = document.getElementById('admin-chat-rooms');
+
+      if(!rooms || rooms.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8 text-xs">Belum ada chat masuk.</p>';
+        return;
+      }
+
+      container.innerHTML = rooms.map(r => {
+        const isSelected = activeAdminRoomId === r.session_id;
+
+        return `
+          <div onclick="selectChatRoom('${r.session_id}')" class="p-2 rounded-lg cursor-pointer transition border ${isSelected ? 'bg-gold/20 border-gold' : 'bg-black/40 border-gray-800 hover:border-gray-600'}">
+            <div class="flex justify-between items-center mb-0.5">
+              <span class="font-bold text-white text-[11px] truncate"><i class="fa-solid fa-user text-gold text-[10px] mr-1"></i> ${r.username || 'Tamu'}</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded ${r.status === 'ended' ? 'bg-red-950 text-red-400' : 'bg-emerald-950 text-emerald-400'}">${r.status === 'ended' ? 'Selesai' : 'Aktif'}</span>
+            </div>
+            <div class="text-[10px] text-gray-400">Order: <span class="text-gold font-semibold">${r.order_id || '-'}</span></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectChatRoom(sessionId) {
+      activeAdminRoomId = sessionId;
+      renderChatRooms();
+      renderActiveMessages();
+    }
+
+    async function renderActiveMessages() {
+      if(!activeAdminRoomId) return;
+      const { data: room } = await supabaseClient.from('chat_rooms').select('*').eq('session_id', activeAdminRoomId).single();
+      const { data: messages } = await supabaseClient.from('chat_messages').select('*').eq('session_id', activeAdminRoomId).order('created_at', { ascending: true });
+
+      const box = document.getElementById('admin-active-messages');
+      const inputBar = document.getElementById('admin-chat-input-bar');
+      const endBtn = document.getElementById('btn-end-chat');
+      const deleteBtn = document.getElementById('btn-delete-chat');
+
+      if(!room) {
+        box.innerHTML = `<p class="text-gray-500 text-center py-8">Sesi chat kosong atau telah dihapus.</p>`;
+        inputBar.classList.add('hidden');
+        endBtn.classList.add('hidden');
+        deleteBtn.classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('chatting-with-label').innerHTML = `Chat: <span class="text-gold">${room.username}</span> (Order: ${room.order_id})`;
+      document.getElementById('chatting-status-label').innerText = room.status === 'ended' ? 'Percakapan Telah Diakhiri' : 'Percakapan Aktif';
+      
+      deleteBtn.classList.remove('hidden');
+
+      if(room.status === 'ended') {
+        inputBar.classList.add('hidden');
+        endBtn.classList.add('hidden');
+      } else {
+        inputBar.classList.remove('hidden');
+        endBtn.classList.remove('hidden');
+      }
+
+      box.innerHTML = (messages || []).map(m => {
+        const timeStr = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        if(m.sender === 'user') {
+          return `
+            <div class="flex justify-start">
+              <div class="bg-gray-800 text-gray-200 p-2 rounded-xl border border-gray-700 max-w-[85%] text-xs">
+                <span class="text-gold font-bold block text-[9px]">${room.username}:</span>
+                ${m.message}
+                <span class="block text-[8px] text-gray-500 mt-0.5">${timeStr}</span>
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="flex justify-end">
+              <div class="bg-emerald-600 text-white p-2 rounded-xl max-w-[85%] text-xs">
+                <span class="text-emerald-200 font-bold block text-[9px]">Admin:</span>
+                ${m.message}
+                <span class="block text-[8px] text-emerald-200 text-right mt-0.5">${timeStr}</span>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendAdminChat() {
+      if(!activeAdminRoomId) return;
+      const input = document.getElementById('admin-reply-input');
+      const text = input.value.trim();
+      if(!text) return;
+
+      const { data: room } = await supabaseClient.from('chat_rooms').select('*').eq('session_id', activeAdminRoomId).single();
+      if(!room || room.status === 'ended') return;
+
+      await supabaseClient.from('chat_messages').insert([{
+        session_id: activeAdminRoomId,
+        username: room.username,
+        order_id: room.order_id,
+        sender: 'admin',
+        message: text
+      }]);
+
+      await supabaseClient.from('chat_rooms').update({ updated_at: new Date().toISOString() }).eq('session_id', activeAdminRoomId);
+
+      input.value = '';
+      renderActiveMessages();
+    }
+
+    async function endSelectedChat() {
+      if(!activeAdminRoomId) return;
+      if(!confirm('Apakah Anda yakin ingin mengakhiri percakapan ini?')) return;
+
+      await supabaseClient.from('chat_rooms').update({ status: 'ended' }).eq('session_id', activeAdminRoomId);
+      await supabaseClient.from('chat_messages').insert([{
+        session_id: activeAdminRoomId,
+        username: 'Admin',
+        sender: 'admin',
+        message: '— Sesi percakapan ini telah diakhiri oleh Admin —'
+      }]);
+
+      renderActiveMessages();
+      renderChatRooms();
+    }
+
+    async function deleteSelectedChat() {
+      if(!activeAdminRoomId) return;
+      if(!confirm('Hapus riwayat percakapan ini?')) return;
+
+      await supabaseClient.from('chat_messages').delete().eq('session_id', activeAdminRoomId);
+      await supabaseClient.from('chat_rooms').delete().eq('session_id', activeAdminRoomId);
+
+      activeAdminRoomId = null;
+      document.getElementById('chatting-with-label').innerText = 'Pilih sesi chat...';
+      document.getElementById('chatting-status-label').innerText = '';
+      document.getElementById('btn-end-chat').classList.add('hidden');
+      document.getElementById('btn-delete-chat').classList.add('hidden');
+      document.getElementById('admin-chat-input-bar').classList.add('hidden');
+      document.getElementById('admin-active-messages').innerHTML = '<p class="text-gray-500 text-center py-8">Chat telah dihapus.</p>';
+      
+      renderChatRooms();
+    }
+
+    /* REALTIME SUBSCRIPTIONS */
+    supabaseClient.channel('admin_realtime_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => renderOrders())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => renderStocks())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'testimonials' }, () => renderAdminTestimonials())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'store_settings' }, () => {
+        renderStoreStatusControls();
+        loadQrisPreview();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_rooms' }, () => renderChatRooms())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, () => {
+        if(activeAdminRoomId) renderActiveMessages();
+      })
+      .subscribe();
+
+    renderOrders();
+    renderStocks();
+    renderAdminTestimonials();
+    loadQrisPreview();
+    renderStoreStatusControls();
+    renderChatRooms();
+  </script>
+</body>
+</html>
