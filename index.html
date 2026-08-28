@@ -114,7 +114,9 @@
         <button onclick="switchTab('testimonials')" id="btn-tab-testimonials" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1">
           <i class="fa-solid fa-star text-gold text-[10px]"></i> Testimoni
         </button>
-        <button onclick="switchTab('chats')" id="btn-tab-chats" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition">Live Chat</button>
+        <button onclick="switchTab('chats')" id="btn-tab-chats" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition relative">
+          Live Chat <span id="chat-badge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+        </button>
       </div>
     </div>
   </header>
@@ -133,6 +135,7 @@
 
     <!-- TAB 2: KELOLA STOK & UBAH HARGA -->
     <div id="tab-stocks" class="hidden flex-1 overflow-y-auto space-y-6">
+      <!-- 1. EKONOMIS -->
       <div class="bg-black/60 border border-gold/40 p-3.5 rounded-xl">
         <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
           <h4 class="text-xs sm:text-sm font-bold text-gold uppercase"><i class="fa-solid fa-cart-shopping mr-1"></i> 1. Kategori Paket Ekonomis</h4>
@@ -144,6 +147,7 @@
         <div id="stock-group-ekonomis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
       </div>
 
+      <!-- 2. SULTAN -->
       <div class="bg-black/60 border border-emerald-500/40 p-3.5 rounded-xl">
         <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
           <h4 class="text-xs sm:text-sm font-bold text-emerald-400 uppercase"><i class="fa-solid fa-crown mr-1"></i> 2. Kategori Paket Sultan</h4>
@@ -155,6 +159,7 @@
         <div id="stock-group-sultan" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
       </div>
 
+      <!-- 3. CEO -->
       <div class="bg-black/60 border border-purple-500/40 p-3.5 rounded-xl">
         <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
           <h4 class="text-xs sm:text-sm font-bold text-purple-400 uppercase"><i class="fa-solid fa-gem mr-1"></i> 3. Kategori Paket CEO</h4>
@@ -164,6 +169,18 @@
           </div>
         </div>
         <div id="stock-group-ceo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+      </div>
+
+      <!-- 4. PEJABAT -->
+      <div class="bg-black/60 border border-red-500/40 p-3.5 rounded-xl">
+        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
+          <h4 class="text-xs sm:text-sm font-bold text-red-400 uppercase"><i class="fa-solid fa-landmark mr-1"></i> 4. Kategori Paket Pejabat</h4>
+          <div class="flex gap-1.5">
+            <button onclick="toggleAllCategoryStock('pejabat', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
+            <button onclick="toggleAllCategoryStock('pejabat', false)" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Nonaktifkan Semua</button>
+          </div>
+        </div>
+        <div id="stock-group-pejabat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
       </div>
     </div>
 
@@ -276,12 +293,65 @@
   </footer>
 
   <script>
-    /* SUPABASE URL & ANON KEY */
+    const defaultCatalog = [
+      { id: 'ek-10', tier: 'ekonomis', robux: 10, price: 1800, active: true },
+      { id: 'ek-20', tier: 'ekonomis', robux: 20, price: 3500, active: true },
+      { id: 'ek-30', tier: 'ekonomis', robux: 30, price: 5200, active: true },
+      { id: 'ek-40', tier: 'ekonomis', robux: 40, price: 6900, active: true },
+      { id: 'ek-50', tier: 'ekonomis', robux: 50, price: 8500, active: true },
+      
+      { id: 'sl-100', tier: 'sultan', robux: 100, price: 16000, active: true },
+      { id: 'sl-200', tier: 'sultan', robux: 200, price: 32000, active: true },
+      { id: 'sl-300', tier: 'sultan', robux: 300, price: 48000, active: true },
+      { id: 'sl-400', tier: 'sultan', robux: 400, price: 63000, active: true },
+      { id: 'sl-500', tier: 'sultan', robux: 500, price: 78000, active: true },
+      
+      { id: 'co-1000', tier: 'ceo', robux: '1.000', price: 155000, active: true },
+      { id: 'co-2000', tier: 'ceo', robux: '2.000', price: 310000, active: true },
+      { id: 'co-3000', tier: 'ceo', robux: '3.000', price: 460000, active: true },
+      { id: 'co-4000', tier: 'ceo', robux: '4.000', price: 610000, active: true },
+      { id: 'co-5000', tier: 'ceo', robux: '5.000', price: 750000, active: true },
+
+      { id: 'pj-6000', tier: 'pejabat', robux: '6.000', price: 0, active: true },
+      { id: 'pj-7000', tier: 'pejabat', robux: '7.000', price: 0, active: true },
+      { id: 'pj-8000', tier: 'pejabat', robux: '8.000', price: 0, active: true },
+      { id: 'pj-9000', tier: 'pejabat', robux: '9.000', price: 0, active: true },
+      { id: 'pj-10000', tier: 'pejabat', robux: '10.000', price: 0, active: true }
+    ];
+
     const SUPABASE_URL = "https://ohjebpvdbaoejpnoaeaa.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oamVicHZkYmFvZWpwbm9hZWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NjMxNTIsImV4cCI6MjEwMzIzOTE1Mn0.BqDKF4D82IkpFmxzxDfGPQ5AwzRF3cmqrkpQiwHUsgo";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let activeAdminRoomId = null;
+
+    function playCuteNotificationSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start();
+        osc1.stop(audioCtx.currentTime + 0.35);
+
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.12);
+        gain2.gain.setValueAtTime(0.18, audioCtx.currentTime + 0.12);
+        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.55);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(audioCtx.currentTime + 0.12);
+        osc2.stop(audioCtx.currentTime + 0.55);
+      } catch (e) {}
+    }
 
     async function setStoreStatus(status) {
       await supabaseClient.from('store_settings').update({ store_status: status }).eq('id', 1);
@@ -314,7 +384,7 @@
       document.getElementById('btn-tab-stocks').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition';
       document.getElementById('btn-tab-qris').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1';
       document.getElementById('btn-tab-testimonials').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1';
-      document.getElementById('btn-tab-chats').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition';
+      document.getElementById('btn-tab-chats').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition relative';
 
       if(tab === 'orders') {
         document.getElementById('tab-orders').classList.remove('hidden');
@@ -334,7 +404,7 @@
         renderAdminTestimonials();
       } else if(tab === 'chats') {
         document.getElementById('tab-chats').classList.remove('hidden');
-        document.getElementById('btn-tab-chats').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition';
+        document.getElementById('btn-tab-chats').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition relative';
         renderChatRooms();
       }
     }
@@ -357,6 +427,28 @@
         alert('Gambar QRIS berhasil diperbarui dan telah diterapkan ke halaman pelanggan!');
       };
       reader.readAsDataURL(file);
+    }
+
+    async function initiateChatWithCustomer(sessionId, username, orderId) {
+      if(!sessionId) return alert('Session ID pemesan tidak ditemukan!');
+      
+      await supabaseClient.from('chat_rooms').upsert([{
+        session_id: sessionId,
+        username: username,
+        order_id: orderId,
+        status: 'active'
+      }]);
+
+      await supabaseClient.from('chat_messages').insert([{
+        session_id: sessionId,
+        username: username,
+        order_id: orderId,
+        sender: 'admin',
+        message: `Halo @${username} (${orderId}), kami dari Admin Boost Store ingin memastikan apakah Anda sudah berusia di atas 16 tahun atau telah memperoleh izin dari orang tua/wali?`
+      }]);
+
+      switchTab('chats');
+      selectChatRoom(sessionId);
     }
 
     async function renderOrders() {
@@ -395,8 +487,11 @@
                 Roblox: <span class="text-white font-bold">${o.username}</span> | 
                 <span class="text-emerald-400 font-bold">${o.product}</span> (Rp ${Number(o.price).toLocaleString('id-ID')})
               </div>
-              <div>
-                <button onclick="viewImageModal('${o.proof_image}', 'Bukti Transfer - ${o.id}')" class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 text-gold border border-gold/40 px-2.5 py-1 rounded text-[10px] font-bold">
+              <div class="flex items-center gap-1.5">
+                <button onclick="initiateChatWithCustomer('${o.session_id}', '${o.username}', '${o.id}')" class="bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-500/50 px-2.5 py-1 rounded text-[10px] font-bold flex items-center gap-1">
+                  <i class="fa-solid fa-comments"></i> Chat Customer
+                </button>
+                <button onclick="viewImageModal('${o.proof_image}', 'Bukti Transfer - ${o.id}')" class="bg-gray-800 hover:bg-gray-700 text-gold border border-gold/40 px-2.5 py-1 rounded text-[10px] font-bold">
                   <i class="fa-solid fa-image mr-1"></i> Bukti Transfer
                 </button>
               </div>
@@ -529,10 +624,12 @@
       const ekoBox = document.getElementById('stock-group-ekonomis');
       const sltBox = document.getElementById('stock-group-sultan');
       const ceoBox = document.getElementById('stock-group-ceo');
+      const pjbBox = document.getElementById('stock-group-pejabat');
 
       ekoBox.innerHTML = '';
       sltBox.innerHTML = '';
       ceoBox.innerHTML = '';
+      pjbBox.innerHTML = '';
 
       if(!products) return;
 
@@ -547,7 +644,7 @@
             </div>
             <div class="flex items-center gap-1.5 pt-1 border-t border-gray-900">
               <span class="text-[10px] text-gray-400 font-bold">Rp</span>
-              <input type="number" id="price-input-${p.id}" value="${p.price}" class="flex-1 bg-black border border-gray-700 rounded px-1.5 py-1 text-xs text-gold font-bold focus:outline-none focus:border-gold" />
+              <input type="number" id="price-input-${p.id}" value="${p.price}" placeholder="0" class="flex-1 bg-black border border-gray-700 rounded px-1.5 py-1 text-xs text-gold font-bold focus:outline-none focus:border-gold" />
               <button onclick="saveProductPrice('${p.id}')" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-bold px-2 py-1 rounded transition">
                 Simpan
               </button>
@@ -558,13 +655,14 @@
         if(p.tier === 'ekonomis') ekoBox.innerHTML += itemHtml;
         if(p.tier === 'sultan') sltBox.innerHTML += itemHtml;
         if(p.tier === 'ceo') ceoBox.innerHTML += itemHtml;
+        if(p.tier === 'pejabat') pjbBox.innerHTML += itemHtml;
       });
     }
 
     async function saveProductPrice(productId) {
       const inputEl = document.getElementById(`price-input-${productId}`);
       const newPrice = parseInt(inputEl.value, 10);
-      if(isNaN(newPrice) || newPrice <= 0) return alert('Harga harus berupa angka valid di atas 0!');
+      if(isNaN(newPrice) || newPrice < 0) return alert('Harga harus berupa angka valid (minimal 0)!');
 
       await supabaseClient.from('products').update({ price: newPrice }).eq('id', productId);
       alert('Harga berhasil disimpan & langsung diperbarui ke seluruh dunia!');
@@ -736,7 +834,10 @@
         loadQrisPreview();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_rooms' }, () => renderChatRooms())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, () => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => {
+        if(payload.new && payload.new.sender === 'user') {
+          playCuteNotificationSound();
+        }
         if(activeAdminRoomId) renderActiveMessages();
       })
       .subscribe();
