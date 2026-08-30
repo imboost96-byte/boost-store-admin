@@ -50,6 +50,10 @@
     .glow-red {
       filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
     }
+    .qris-crisp {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
   </style>
 </head>
 <body class="text-gray-200 font-sans antialiased min-h-screen flex flex-col justify-between p-3 sm:p-6">
@@ -279,20 +283,20 @@
       </div>
     </div>
 
-    <!-- TAB 3: KELOLA GAMBAR QRIS -->
+    <!-- TAB 3: KELOLA GAMBAR QRIS (DIPERBESAR & DIPERJELAS) -->
     <div id="tab-qris" class="hidden flex-1 overflow-y-auto max-w-xl mx-auto w-full space-y-4">
       <div class="bg-black/70 border border-gold/40 p-4 sm:p-6 rounded-2xl text-center space-y-4">
         <div>
           <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider"><i class="fa-solid fa-qrcode mr-1"></i> Pengaturan QRIS Pembayaran</h3>
-          <p class="text-xs text-gray-400 mt-1">Unggah gambar QRIS terbaru toko Anda.</p>
+          <p class="text-xs text-gray-400 mt-1">Unggah gambar QRIS beresolusi tinggi agar mudah dipindai oleh pelanggan.</p>
         </div>
 
-        <div class="bg-white p-3 rounded-2xl inline-block border-2 border-gold max-w-[240px] shadow-lg">
-          <img id="admin-qris-preview" src="qris-boost.jpeg" alt="QRIS Boost Store" class="max-h-[220px] w-auto mx-auto rounded-lg object-contain" />
+        <div class="bg-white p-3.5 sm:p-4 rounded-2xl inline-block border-2 border-gold max-w-[280px] sm:max-w-[340px] shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+          <img id="admin-qris-preview" src="qris-boost.jpeg" alt="QRIS Boost Store" class="w-full h-auto mx-auto rounded-xl object-contain qris-crisp" />
         </div>
 
         <div class="space-y-2">
-          <label class="block text-xs font-bold text-gray-300">Pilih Gambar QRIS Baru (Format JPG / PNG):</label>
+          <label class="block text-xs font-bold text-gray-300">Pilih Gambar QRIS Baru (Format JPG / PNG / JPEG):</label>
           <input type="file" id="admin-qris-input" accept="image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-gray-800 file:text-gold cursor-pointer" />
         </div>
 
