@@ -47,6 +47,9 @@
     .glow-gold {
       filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6));
     }
+    .glow-red {
+      filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
+    }
   </style>
 </head>
 <body class="text-gray-200 font-sans antialiased min-h-screen flex flex-col justify-between p-3 sm:p-6">
@@ -107,7 +110,7 @@
 
       <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
         <button onclick="switchTab('orders')" id="btn-tab-orders" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition">Pesanan</button>
-        <button onclick="switchTab('stocks')" id="btn-tab-stocks" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition">Kelola Stok & Harga</button>
+        <button onclick="switchTab('stocks')" id="btn-tab-stocks" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition">Kelola Stok & Jadwal Paket</button>
         <button onclick="switchTab('qris')" id="btn-tab-qris" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1">
           <i class="fa-solid fa-qrcode text-gold text-[10px]"></i> QRIS
         </button>
@@ -124,63 +127,155 @@
   <!-- MAIN CONTAINER -->
   <main class="flex-1 w-full max-w-7xl mx-auto card-luxury frame-gold rounded-2xl p-4 sm:p-6 flex flex-col relative overflow-hidden min-h-[550px]">
     
-    <!-- TAB 1: KELOLA PESANAN -->
-    <div id="tab-orders" class="flex-1 overflow-y-auto">
-      <div class="flex justify-between items-center mb-3">
-        <h3 class="text-xs sm:text-sm font-black text-gold uppercase tracking-wider">Daftar Transaksi Masuk</h3>
+    <!-- TAB 1: KELOLA PESANAN & STATISTIK REAL-TIME -->
+    <div id="tab-orders" class="flex-1 overflow-y-auto space-y-4">
+      
+      <!-- STATISTIK PENJUALAN TOKO REAL-TIME -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-black/70 border border-gold/40 p-3.5 rounded-xl flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center text-gold text-lg">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+          <div>
+            <span class="text-[10px] text-gray-400 uppercase font-bold block">Total Transaksi Masuk</span>
+            <strong id="admin-stat-total-orders" class="text-sm sm:text-base font-black text-white">0 Pesanan</strong>
+          </div>
+        </div>
+
+        <div class="bg-black/70 border border-emerald-500/40 p-3.5 rounded-xl flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg">
+            <i class="fa-solid fa-cube"></i>
+          </div>
+          <div>
+            <span class="text-[10px] text-gray-400 uppercase font-bold block">Total Robux Terjual</span>
+            <strong id="admin-stat-total-robux" class="text-sm sm:text-base font-black text-emerald-400">0 R$</strong>
+          </div>
+        </div>
+
+        <div class="bg-black/70 border border-purple-500/40 p-3.5 rounded-xl flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-lg">
+            <i class="fa-solid fa-sack-dollar"></i>
+          </div>
+          <div>
+            <span class="text-[10px] text-gray-400 uppercase font-bold block">Total Omset Pendapatan</span>
+            <strong id="admin-stat-total-income" class="text-sm sm:text-base font-black text-gold">Rp 0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2 border-t border-gray-800">
+        <h3 class="text-xs sm:text-sm font-black text-gold uppercase tracking-wider">Daftar Transaksi Masuk (Real-Time)</h3>
         <span class="text-xs text-gray-400" id="total-orders-count">0 Pesanan</span>
       </div>
+
       <div id="orders-list" class="space-y-3"></div>
     </div>
 
-    <!-- TAB 2: KELOLA STOK & UBAH HARGA -->
+    <!-- TAB 2: KELOLA STOK, HARGA & JADWAL RESTOK PER KATEGORI PAKET -->
     <div id="tab-stocks" class="hidden flex-1 overflow-y-auto space-y-6">
+      
       <!-- 1. EKONOMIS -->
-      <div class="bg-black/60 border border-gold/40 p-3.5 rounded-xl">
-        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
+      <div class="bg-black/60 border border-gold/40 p-3.5 rounded-xl space-y-3">
+        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
           <h4 class="text-xs sm:text-sm font-bold text-gold uppercase"><i class="fa-solid fa-cart-shopping mr-1"></i> 1. Kategori Paket Ekonomis</h4>
-          <div class="flex gap-1.5">
-            <button onclick="toggleAllCategoryStock('ekonomis', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
-            <button onclick="toggleAllCategoryStock('ekonomis', false)" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Nonaktifkan Semua</button>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="toggleAllCategoryStock('ekonomis', 'available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
+            <button onclick="toggleAllCategoryStock('ekonomis', 'no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Belum Ada Stok</button>
+            <button onclick="toggleAllCategoryStock('ekonomis', 'out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Stok Habis</button>
           </div>
         </div>
-        <div id="stock-group-ekonomis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+
+        <div class="bg-black/50 border border-gold/30 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
+          <div class="flex items-center space-x-2">
+            <i class="fa-regular fa-calendar-days text-gold"></i>
+            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Ekonomis (Tanggal/Bulan/Tahun):</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <input type="date" id="schedule-date-ekonomis" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
+            <button onclick="saveTierSchedule('ekonomis')" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded transition">Terapkan Jadwal</button>
+            <button onclick="clearTierSchedule('ekonomis')" class="text-red-400 hover:underline text-[10px] font-bold">Hapus</button>
+          </div>
+        </div>
+
+        <div id="stock-group-ekonomis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
       <!-- 2. SULTAN -->
-      <div class="bg-black/60 border border-emerald-500/40 p-3.5 rounded-xl">
-        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
+      <div class="bg-black/60 border border-emerald-500/40 p-3.5 rounded-xl space-y-3">
+        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
           <h4 class="text-xs sm:text-sm font-bold text-emerald-400 uppercase"><i class="fa-solid fa-crown mr-1"></i> 2. Kategori Paket Sultan</h4>
-          <div class="flex gap-1.5">
-            <button onclick="toggleAllCategoryStock('sultan', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
-            <button onclick="toggleAllCategoryStock('sultan', false)" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Nonaktifkan Semua</button>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="toggleAllCategoryStock('sultan', 'available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
+            <button onclick="toggleAllCategoryStock('sultan', 'no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Belum Ada Stok</button>
+            <button onclick="toggleAllCategoryStock('sultan', 'out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Stok Habis</button>
           </div>
         </div>
-        <div id="stock-group-sultan" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+
+        <div class="bg-black/50 border border-emerald-500/30 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
+          <div class="flex items-center space-x-2">
+            <i class="fa-regular fa-calendar-days text-emerald-400"></i>
+            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Sultan (Tanggal/Bulan/Tahun):</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <input type="date" id="schedule-date-sultan" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
+            <button onclick="saveTierSchedule('sultan')" class="bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black px-3 py-1 rounded transition">Terapkan Jadwal</button>
+            <button onclick="clearTierSchedule('sultan')" class="text-red-400 hover:underline text-[10px] font-bold">Hapus</button>
+          </div>
+        </div>
+
+        <div id="stock-group-sultan" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
       <!-- 3. CEO -->
-      <div class="bg-black/60 border border-purple-500/40 p-3.5 rounded-xl">
-        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
+      <div class="bg-black/60 border border-purple-500/40 p-3.5 rounded-xl space-y-3">
+        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
           <h4 class="text-xs sm:text-sm font-bold text-purple-400 uppercase"><i class="fa-solid fa-gem mr-1"></i> 3. Kategori Paket CEO</h4>
-          <div class="flex gap-1.5">
-            <button onclick="toggleAllCategoryStock('ceo', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
-            <button onclick="toggleAllCategoryStock('ceo', false)" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Nonaktifkan Semua</button>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="toggleAllCategoryStock('ceo', 'available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
+            <button onclick="toggleAllCategoryStock('ceo', 'no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Belum Ada Stok</button>
+            <button onclick="toggleAllCategoryStock('ceo', 'out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Stok Habis</button>
           </div>
         </div>
-        <div id="stock-group-ceo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+
+        <div class="bg-black/50 border border-purple-500/30 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
+          <div class="flex items-center space-x-2">
+            <i class="fa-regular fa-calendar-days text-purple-400"></i>
+            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket CEO (Tanggal/Bulan/Tahun):</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <input type="date" id="schedule-date-ceo" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
+            <button onclick="saveTierSchedule('ceo')" class="bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-black px-3 py-1 rounded transition">Terapkan Jadwal</button>
+            <button onclick="clearTierSchedule('ceo')" class="text-red-400 hover:underline text-[10px] font-bold">Hapus</button>
+          </div>
+        </div>
+
+        <div id="stock-group-ceo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
-      <!-- 4. PEJABAT -->
-      <div class="bg-black/60 border border-red-500/40 p-3.5 rounded-xl">
-        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800 mb-3">
-          <h4 class="text-xs sm:text-sm font-bold text-red-400 uppercase"><i class="fa-solid fa-landmark mr-1"></i> 4. Kategori Paket Pejabat</h4>
-          <div class="flex gap-1.5">
-            <button onclick="toggleAllCategoryStock('pejabat', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
-            <button onclick="toggleAllCategoryStock('pejabat', false)" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Nonaktifkan Semua</button>
+      <!-- 4. PEJABAT (MERAH MENYALA EKSKLUSIF) -->
+      <div class="bg-black/60 border border-red-500/70 p-3.5 rounded-xl space-y-3 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
+          <h4 class="text-xs sm:text-sm font-bold text-red-400 uppercase flex items-center gap-1.5"><i class="fa-solid fa-landmark text-red-500 glow-red"></i> 4. Kategori Paket Pejabat</h4>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="toggleAllCategoryStock('pejabat', 'available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
+            <button onclick="toggleAllCategoryStock('pejabat', 'no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Belum Ada Stok</button>
+            <button onclick="toggleAllCategoryStock('pejabat', 'out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Stok Habis</button>
           </div>
         </div>
-        <div id="stock-group-pejabat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+
+        <div class="bg-black/50 border border-red-500/40 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
+          <div class="flex items-center space-x-2">
+            <i class="fa-regular fa-calendar-days text-red-400"></i>
+            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Pejabat (Tanggal/Bulan/Tahun):</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <input type="date" id="schedule-date-pejabat" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
+            <button onclick="saveTierSchedule('pejabat')" class="bg-red-600 hover:bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded transition">Terapkan Jadwal</button>
+            <button onclick="clearTierSchedule('pejabat')" class="text-red-400 hover:underline text-[10px] font-bold">Hapus</button>
+          </div>
+        </div>
+
+        <div id="stock-group-pejabat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
     </div>
 
@@ -294,29 +389,29 @@
 
   <script>
     const defaultCatalog = [
-      { id: 'ek-10', tier: 'ekonomis', robux: 10, price: 1800, active: true },
-      { id: 'ek-20', tier: 'ekonomis', robux: 20, price: 3500, active: true },
-      { id: 'ek-30', tier: 'ekonomis', robux: 30, price: 5200, active: true },
-      { id: 'ek-40', tier: 'ekonomis', robux: 40, price: 6900, active: true },
-      { id: 'ek-50', tier: 'ekonomis', robux: 50, price: 8500, active: true },
+      { id: 'ek-10', tier: 'ekonomis', robux: '10', price: 1800, stock_status: 'available' },
+      { id: 'ek-20', tier: 'ekonomis', robux: '20', price: 3500, stock_status: 'available' },
+      { id: 'ek-30', tier: 'ekonomis', robux: '30', price: 5200, stock_status: 'available' },
+      { id: 'ek-40', tier: 'ekonomis', robux: '40', price: 6900, stock_status: 'available' },
+      { id: 'ek-50', tier: 'ekonomis', robux: '50', price: 8500, stock_status: 'available' },
       
-      { id: 'sl-100', tier: 'sultan', robux: 100, price: 16000, active: true },
-      { id: 'sl-200', tier: 'sultan', robux: 200, price: 32000, active: true },
-      { id: 'sl-300', tier: 'sultan', robux: 300, price: 48000, active: true },
-      { id: 'sl-400', tier: 'sultan', robux: 400, price: 63000, active: true },
-      { id: 'sl-500', tier: 'sultan', robux: 500, price: 78000, active: true },
+      { id: 'sl-100', tier: 'sultan', robux: '100', price: 16000, stock_status: 'available' },
+      { id: 'sl-200', tier: 'sultan', robux: '200', price: 32000, stock_status: 'available' },
+      { id: 'sl-300', tier: 'sultan', robux: '300', price: 48000, stock_status: 'available' },
+      { id: 'sl-400', tier: 'sultan', robux: '400', price: 63000, stock_status: 'available' },
+      { id: 'sl-500', tier: 'sultan', robux: '500', price: 78000, stock_status: 'available' },
       
-      { id: 'co-1000', tier: 'ceo', robux: '1.000', price: 155000, active: true },
-      { id: 'co-2000', tier: 'ceo', robux: '2.000', price: 310000, active: true },
-      { id: 'co-3000', tier: 'ceo', robux: '3.000', price: 460000, active: true },
-      { id: 'co-4000', tier: 'ceo', robux: '4.000', price: 610000, active: true },
-      { id: 'co-5000', tier: 'ceo', robux: '5.000', price: 750000, active: true },
+      { id: 'co-1000', tier: 'ceo', robux: '1.000', price: 155000, stock_status: 'available' },
+      { id: 'co-2000', tier: 'ceo', robux: '2.000', price: 310000, stock_status: 'available' },
+      { id: 'co-3000', tier: 'ceo', robux: '3.000', price: 460000, stock_status: 'available' },
+      { id: 'co-4000', tier: 'ceo', robux: '4.000', price: 610000, stock_status: 'available' },
+      { id: 'co-5000', tier: 'ceo', robux: '5.000', price: 750000, stock_status: 'available' },
 
-      { id: 'pj-6000', tier: 'pejabat', robux: '6.000', price: 0, active: true },
-      { id: 'pj-7000', tier: 'pejabat', robux: '7.000', price: 0, active: true },
-      { id: 'pj-8000', tier: 'pejabat', robux: '8.000', price: 0, active: true },
-      { id: 'pj-9000', tier: 'pejabat', robux: '9.000', price: 0, active: true },
-      { id: 'pj-10000', tier: 'pejabat', robux: '10.000', price: 0, active: true }
+      { id: 'pj-6000', tier: 'pejabat', robux: '6.000', price: 0, stock_status: 'available' },
+      { id: 'pj-7000', tier: 'pejabat', robux: '7.000', price: 0, stock_status: 'available' },
+      { id: 'pj-8000', tier: 'pejabat', robux: '8.000', price: 0, stock_status: 'available' },
+      { id: 'pj-9000', tier: 'pejabat', robux: '9.000', price: 0, stock_status: 'available' },
+      { id: 'pj-10000', tier: 'pejabat', robux: '10.000', price: 0, stock_status: 'available' }
     ];
 
     const SUPABASE_URL = "https://ohjebpvdbaoejpnoaeaa.supabase.co";
@@ -324,6 +419,10 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let activeAdminRoomId = null;
+
+    function parseNumericRobux(robuxStr) {
+      return parseInt(String(robuxStr).replace(/\./g, ''), 10) || 0;
+    }
 
     function playCuteNotificationSound() {
       try {
@@ -457,11 +556,28 @@
       
       if(!list || list.length === 0) {
         document.getElementById('total-orders-count').innerText = `0 Pesanan`;
+        document.getElementById('admin-stat-total-orders').innerText = '0 Pesanan';
+        document.getElementById('admin-stat-total-robux').innerText = '0 R$';
+        document.getElementById('admin-stat-total-income').innerText = 'Rp 0';
         el.innerHTML = '<p class="text-gray-500 text-center py-8 text-xs">Belum ada transaksi masuk.</p>';
         return;
       }
 
+      let totalIncome = 0;
+      let totalRobuxAll = 0;
+
+      list.forEach(o => {
+        totalIncome += Number(o.price) || 0;
+        const match = String(o.product).match(/^([\d\.]+)\s*Robux/i);
+        if(match && match[1]) {
+          totalRobuxAll += parseNumericRobux(match[1]);
+        }
+      });
+
       document.getElementById('total-orders-count').innerText = `${list.length} Pesanan`;
+      document.getElementById('admin-stat-total-orders').innerText = `${list.length} Pesanan`;
+      document.getElementById('admin-stat-total-robux').innerText = `${totalRobuxAll.toLocaleString('id-ID')} R$`;
+      document.getElementById('admin-stat-total-income').innerText = `Rp ${totalIncome.toLocaleString('id-ID')}`;
 
       el.innerHTML = list.map(o => {
         let badgeColor = 'bg-yellow-900/40 text-yellow-400 border border-yellow-500';
@@ -470,22 +586,23 @@
         if(o.status === 'Selesai') badgeColor = 'bg-emerald-900/40 text-emerald-400 border border-emerald-500';
         if(o.status === 'Dibatalkan') badgeColor = 'bg-red-900/40 text-red-400 border border-red-500';
 
-        const timeStr = new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateObj = new Date(o.created_at);
+        const timeFullStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+        const dateFullStr = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
         return `
           <div class="bg-black/70 border border-gray-800 p-3 sm:p-4 rounded-xl space-y-2">
             <div class="flex justify-between items-center gap-1">
               <div>
                 <span class="font-black text-gold text-xs sm:text-sm">${o.id}</span>
-                <span class="text-[10px] text-gray-400 ml-1">(${timeStr})</span>
+                <span class="text-[10px] text-gray-400 ml-1.5 font-semibold">Roblox: <strong class="text-white">${o.username}</strong></span>
               </div>
               <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded ${badgeColor}">${o.status}</span>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center text-[11px] sm:text-xs text-gray-300 gap-1.5">
               <div>
-                Roblox: <span class="text-white font-bold">${o.username}</span> | 
-                <span class="text-emerald-400 font-bold">${o.product}</span> (Rp ${Number(o.price).toLocaleString('id-ID')})
+                Paket: <span class="text-emerald-400 font-bold">${o.product}</span> (Rp ${Number(o.price).toLocaleString('id-ID')})
               </div>
               <div class="flex items-center gap-1.5">
                 <button onclick="initiateChatWithCustomer('${o.session_id}', '${o.username}', '${o.id}')" class="bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-500/50 px-2.5 py-1 rounded text-[10px] font-bold flex items-center gap-1">
@@ -495,6 +612,11 @@
                   <i class="fa-solid fa-image mr-1"></i> Bukti Transfer
                 </button>
               </div>
+            </div>
+
+            <div class="flex flex-wrap justify-between items-center text-[10px] text-gray-400 bg-black/50 p-2 rounded-lg border border-gray-900">
+              <span><i class="fa-regular fa-calendar-days mr-1 text-gold"></i>Tanggal: <strong>${dateFullStr}</strong></span>
+              <span><i class="fa-regular fa-clock mr-1 text-gold"></i>Waktu: <strong>${timeFullStr}</strong></span>
             </div>
 
             <div class="pt-2 border-t border-gray-900 flex flex-wrap gap-1 items-center justify-between">
@@ -619,6 +741,36 @@
       document.getElementById('proof-modal').classList.remove('flex');
     }
 
+    async function loadSchedulesInAdmin() {
+      const { data } = await supabaseClient.from('package_schedules').select('*');
+      if(data) {
+        data.forEach(s => {
+          const inputEl = document.getElementById(`schedule-date-${s.tier}`);
+          if(inputEl) {
+            inputEl.value = s.release_date ? new Date(s.release_date).toISOString().split('T')[0] : '';
+          }
+        });
+      }
+    }
+
+    async function saveTierSchedule(tier) {
+      const dateInput = document.getElementById(`schedule-date-${tier}`);
+      if(!dateInput.value) return alert('Pilih tanggal restok terlebih dahulu!');
+
+      const isoDate = new Date(dateInput.value + 'T00:00:00Z').toISOString();
+      await supabaseClient.from('package_schedules').upsert({ tier: tier, release_date: isoDate });
+      alert(`Jadwal restok untuk Paket ${tier.toUpperCase()} berhasil diterapkan!`);
+      loadSchedulesInAdmin();
+    }
+
+    async function clearTierSchedule(tier) {
+      await supabaseClient.from('package_schedules').upsert({ tier: tier, release_date: null });
+      const dateInput = document.getElementById(`schedule-date-${tier}`);
+      if(dateInput) dateInput.value = '';
+      alert(`Jadwal restok untuk Paket ${tier.toUpperCase()} telah dihapus (stok kembali normal).`);
+      loadSchedulesInAdmin();
+    }
+
     async function renderStocks() {
       const { data: products } = await supabaseClient.from('products').select('*').order('display_order', { ascending: true });
       const ekoBox = document.getElementById('stock-group-ekonomis');
@@ -634,18 +786,30 @@
       if(!products) return;
 
       products.forEach(p => {
+        const currentStatus = p.stock_status || (p.active !== false ? 'available' : 'out_of_stock');
+
         const itemHtml = `
-          <div class="bg-black/80 border border-gray-800 p-2.5 rounded-lg flex flex-col gap-2">
+          <div class="bg-black/80 border border-gray-800 p-2.5 rounded-xl flex flex-col gap-2">
             <div class="flex justify-between items-center">
               <div class="font-bold text-white text-xs">${p.robux} Robux</div>
-              <button onclick="toggleProductStock('${p.id}', ${!p.active})" class="px-2 py-0.5 rounded text-[9px] font-bold transition ${p.active !== false ? 'bg-emerald-500 text-black' : 'bg-red-600 text-white'}">
-                ${p.active !== false ? 'Tersedia' : 'Habis'}
+            </div>
+
+            <div class="grid grid-cols-3 gap-1">
+              <button onclick="updateProductStockStatus('${p.id}', 'available')" class="py-1 rounded text-[8px] font-extrabold transition ${currentStatus === 'available' ? 'bg-emerald-500 text-black shadow' : 'bg-gray-800 text-gray-400 hover:text-white'}">
+                Tersedia
+              </button>
+              <button onclick="updateProductStockStatus('${p.id}', 'no_stock')" class="py-1 rounded text-[8px] font-extrabold transition ${currentStatus === 'no_stock' ? 'bg-amber-600 text-white shadow' : 'bg-gray-800 text-gray-400 hover:text-white'}">
+                Belum Ada
+              </button>
+              <button onclick="updateProductStockStatus('${p.id}', 'out_of_stock')" class="py-1 rounded text-[8px] font-extrabold transition ${currentStatus === 'out_of_stock' ? 'bg-red-700 text-white shadow' : 'bg-gray-800 text-gray-400 hover:text-white'}">
+                Habis
               </button>
             </div>
+            
             <div class="flex items-center gap-1.5 pt-1 border-t border-gray-900">
-              <span class="text-[10px] text-gray-400 font-bold">Rp</span>
+              <span class="text-[10px] text-gray-400 font-bold">Harga Rp:</span>
               <input type="number" id="price-input-${p.id}" value="${p.price}" placeholder="0" class="flex-1 bg-black border border-gray-700 rounded px-1.5 py-1 text-xs text-gold font-bold focus:outline-none focus:border-gold" />
-              <button onclick="saveProductPrice('${p.id}')" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-bold px-2 py-1 rounded transition">
+              <button onclick="saveProductPrice('${p.id}')" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-black px-2.5 py-1 rounded transition">
                 Simpan
               </button>
             </div>
@@ -657,11 +821,21 @@
         if(p.tier === 'ceo') ceoBox.innerHTML += itemHtml;
         if(p.tier === 'pejabat') pjbBox.innerHTML += itemHtml;
       });
+
+      loadSchedulesInAdmin();
+    }
+
+    async function updateProductStockStatus(productId, newStatus) {
+      await supabaseClient.from('products').update({ 
+        stock_status: newStatus,
+        active: newStatus === 'available'
+      }).eq('id', productId);
+      renderStocks();
     }
 
     async function saveProductPrice(productId) {
-      const inputEl = document.getElementById(`price-input-${productId}`);
-      const newPrice = parseInt(inputEl.value, 10);
+      const priceInput = document.getElementById(`price-input-${productId}`);
+      const newPrice = parseInt(priceInput.value, 10);
       if(isNaN(newPrice) || newPrice < 0) return alert('Harga harus berupa angka valid (minimal 0)!');
 
       await supabaseClient.from('products').update({ price: newPrice }).eq('id', productId);
@@ -669,13 +843,11 @@
       renderStocks();
     }
 
-    async function toggleProductStock(productId, newStatus) {
-      await supabaseClient.from('products').update({ active: newStatus }).eq('id', productId);
-      renderStocks();
-    }
-
-    async function toggleAllCategoryStock(tierName, status) {
-      await supabaseClient.from('products').update({ active: status }).eq('tier', tierName);
+    async function toggleAllCategoryStock(tierName, newStatus) {
+      await supabaseClient.from('products').update({ 
+        stock_status: newStatus,
+        active: newStatus === 'available'
+      }).eq('tier', tierName);
       renderStocks();
     }
 
@@ -828,6 +1000,7 @@
     supabaseClient.channel('admin_realtime_channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => renderOrders())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => renderStocks())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'package_schedules' }, () => renderStocks())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'testimonials' }, () => renderAdminTestimonials())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'store_settings' }, () => {
         renderStoreStatusControls();
