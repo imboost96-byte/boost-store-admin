@@ -133,8 +133,6 @@
     
     <!-- TAB 1: KELOLA PESANAN & STATISTIK REAL-TIME -->
     <div id="tab-orders" class="flex-1 overflow-y-auto space-y-4">
-      
-      <!-- STATISTIK PENJUALAN TOKO REAL-TIME -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div class="bg-black/70 border border-gold/40 p-3.5 rounded-xl flex items-center space-x-3">
           <div class="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center text-gold text-lg">
@@ -178,6 +176,75 @@
     <!-- TAB 2: KELOLA STOK, HARGA & JADWAL RESTOK PER KATEGORI PAKET -->
     <div id="tab-stocks" class="hidden flex-1 overflow-y-auto space-y-6">
       
+      <!-- ================= TOP TOOLBAR 3 BAGIAN: JAM BUKA/TUTUP (KIRI), JADWAL RESTOK 4 PAKET (TENGAH), KONTROL 3 TOMBOL MASSAL (KANAN) ================= -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
+        
+        <!-- BAGIAN KIRI: JAM BUKA & TUTUP OTOMATIS REAL-TIME -->
+        <div class="bg-gradient-to-br from-blue-950/60 to-black border border-blue-500/50 p-3.5 rounded-2xl flex flex-col justify-between space-y-2 shadow-lg">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-clock text-blue-400 text-sm"></i>
+            <h4 class="text-xs font-black text-blue-300 uppercase tracking-wider">JAM OPERASIONAL TOKO (REAL-TIME)</h4>
+          </div>
+          <p class="text-[10px] text-gray-400">Atur jam buka dan tutup toko. Di luar jam ini, toko terkunci otomatis.</p>
+          
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <label class="text-[9px] font-bold text-gray-400 block mb-0.5">Jam Buka:</label>
+              <input type="time" id="store-open-input" class="w-full bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-blue-400" />
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-gray-400 block mb-0.5">Jam Tutup:</label>
+              <input type="time" id="store-close-input" class="w-full bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-blue-400" />
+            </div>
+          </div>
+
+          <button onclick="saveStoreHours()" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black py-1.5 rounded-lg transition shadow">
+            Simpan Jam Operasional
+          </button>
+        </div>
+
+        <!-- BAGIAN TENGAH: JADWAL RESTOK MASSAL 4 PAKET -->
+        <div class="bg-gradient-to-br from-yellow-950/70 to-black border border-gold/60 p-3.5 rounded-2xl flex flex-col justify-between space-y-2 text-center shadow-lg">
+          <div class="flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-calendar-check text-gold text-sm"></i>
+            <h4 class="text-xs font-black text-gold uppercase tracking-wider">JADWAL RESTOK (4 KATEGORI)</h4>
+          </div>
+          <p class="text-[10px] text-gray-300">Tentukan satu tanggal rilis untuk seluruh 4 paket sekaligus.</p>
+          
+          <div class="flex items-center justify-center gap-1.5 pt-1">
+            <input type="date" id="schedule-date-all" class="bg-black border border-gold/60 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold font-bold flex-1" />
+            <button onclick="saveAllTiersSchedule()" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1.5 rounded transition">
+              Terapkan
+            </button>
+            <button onclick="clearAllTiersSchedule()" class="text-red-400 hover:underline text-[10px] font-bold px-1">
+              Hapus
+            </button>
+          </div>
+        </div>
+
+        <!-- BAGIAN KANAN: KONTROL STOK MASSAL 3 TOMBOL UNTUK 4 PAKET -->
+        <div class="bg-gradient-to-br from-emerald-950/60 to-black border border-emerald-500/50 p-3.5 rounded-2xl flex flex-col justify-between space-y-2 shadow-lg">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-boxes-stacked text-emerald-400 text-sm"></i>
+            <h4 class="text-xs font-black text-emerald-300 uppercase tracking-wider">KONTROL STOK MASSAL (4 KATEGORI)</h4>
+          </div>
+          <p class="text-[10px] text-gray-400">Ubah status ketersediaan seluruh item di 4 paket dalam satu klik.</p>
+          
+          <div class="grid grid-cols-3 gap-1.5 pt-1">
+            <button onclick="toggleAllFourTiersStock('available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black py-1.5 px-1 rounded-lg transition text-center truncate">
+              Aktifkan Semua
+            </button>
+            <button onclick="toggleAllFourTiersStock('no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[9px] font-black py-1.5 px-1 rounded-lg transition text-center truncate">
+              Belum Ada Stok
+            </button>
+            <button onclick="toggleAllFourTiersStock('out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[9px] font-black py-1.5 px-1 rounded-lg transition text-center truncate">
+              Stok Habis
+            </button>
+          </div>
+        </div>
+
+      </div>
+
       <!-- 1. EKONOMIS -->
       <div class="bg-black/60 border border-gold/40 p-3.5 rounded-xl space-y-3">
         <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
@@ -192,7 +259,7 @@
         <div class="bg-black/50 border border-gold/30 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
           <div class="flex items-center space-x-2">
             <i class="fa-regular fa-calendar-days text-gold"></i>
-            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Ekonomis (Tanggal/Bulan/Tahun):</span>
+            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Ekonomis:</span>
           </div>
           <div class="flex items-center space-x-2">
             <input type="date" id="schedule-date-ekonomis" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
@@ -218,7 +285,7 @@
         <div class="bg-black/50 border border-emerald-500/30 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
           <div class="flex items-center space-x-2">
             <i class="fa-regular fa-calendar-days text-emerald-400"></i>
-            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Sultan (Tanggal/Bulan/Tahun):</span>
+            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Sultan:</span>
           </div>
           <div class="flex items-center space-x-2">
             <input type="date" id="schedule-date-sultan" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
@@ -244,7 +311,7 @@
         <div class="bg-black/50 border border-purple-500/30 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
           <div class="flex items-center space-x-2">
             <i class="fa-regular fa-calendar-days text-purple-400"></i>
-            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket CEO (Tanggal/Bulan/Tahun):</span>
+            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket CEO:</span>
           </div>
           <div class="flex items-center space-x-2">
             <input type="date" id="schedule-date-ceo" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
@@ -256,7 +323,7 @@
         <div id="stock-group-ceo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
-      <!-- 4. PEJABAT (MERAH MENYALA EKSKLUSIF) -->
+      <!-- 4. PEJABAT -->
       <div class="bg-black/60 border border-red-500/70 p-3.5 rounded-xl space-y-3 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
         <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
           <h4 class="text-xs sm:text-sm font-bold text-red-400 uppercase flex items-center gap-1.5"><i class="fa-solid fa-landmark text-red-500 glow-red"></i> 4. Kategori Paket Pejabat</h4>
@@ -270,7 +337,7 @@
         <div class="bg-black/50 border border-red-500/40 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
           <div class="flex items-center space-x-2">
             <i class="fa-regular fa-calendar-days text-red-400"></i>
-            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Pejabat (Tanggal/Bulan/Tahun):</span>
+            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Pejabat:</span>
           </div>
           <div class="flex items-center space-x-2">
             <input type="date" id="schedule-date-pejabat" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
@@ -283,7 +350,7 @@
       </div>
     </div>
 
-    <!-- TAB 3: KELOLA GAMBAR QRIS (DIPERBESAR & DIPERJELAS) -->
+    <!-- TAB 3: KELOLA GAMBAR QRIS -->
     <div id="tab-qris" class="hidden flex-1 overflow-y-auto max-w-xl mx-auto w-full space-y-4">
       <div class="bg-black/70 border border-gold/40 p-4 sm:p-6 rounded-2xl text-center space-y-4">
         <div>
@@ -431,7 +498,6 @@
     function playCuteNotificationSound() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
         const osc1 = audioCtx.createOscillator();
         const gain1 = audioCtx.createGain();
         osc1.type = 'sine';
@@ -462,7 +528,7 @@
     }
 
     async function renderStoreStatusControls() {
-      const { data } = await supabaseClient.from('store_settings').select('store_status').eq('id', 1).single();
+      const { data } = await supabaseClient.from('store_settings').select('store_status, open_time, close_time').eq('id', 1).single();
       const status = data ? data.store_status : 'open';
       const openBtn = document.getElementById('btn-store-open');
       const closedBtn = document.getElementById('btn-store-closed');
@@ -474,6 +540,27 @@
         openBtn.className = 'px-2.5 py-1 text-[10px] font-bold rounded-lg text-gray-400 hover:text-white';
         closedBtn.className = 'px-2.5 py-1 text-[10px] font-bold rounded-lg bg-red-600 text-white shadow animate-pulse';
       }
+
+      if (data) {
+        if (data.open_time) document.getElementById('store-open-input').value = data.open_time.slice(0, 5);
+        if (data.close_time) document.getElementById('store-close-input').value = data.close_time.slice(0, 5);
+      }
+    }
+
+    async function saveStoreHours() {
+      const openTime = document.getElementById('store-open-input').value;
+      const closeTime = document.getElementById('store-close-input').value;
+
+      if (!openTime || !closeTime) {
+        return alert('Harap isi jam buka dan jam tutup toko dengan lengkap!');
+      }
+
+      await supabaseClient.from('store_settings').update({
+        open_time: openTime + ':00',
+        close_time: closeTime + ':00'
+      }).eq('id', 1);
+
+      alert(`Jam operasional toko berhasil disimpan (${openTime} - ${closeTime} WIB)!`);
     }
 
     function switchTab(tab) {
@@ -547,7 +634,7 @@
         username: username,
         order_id: orderId,
         sender: 'admin',
-        message: `Halo @${username} (${orderId}), kami dari Admin Boost Store ingin memastikan apakah Anda sudah berusia di atas 16 tahun atau telah memperoleh izin dari orang tua/wali?`
+        message: `Halo kak apakah sudah benar usernamenya (${username})? Jika sudah benar, mohon di tunggu ya ka🙏`
       }]);
 
       switchTab('chats');
@@ -625,10 +712,10 @@
 
             <div class="pt-2 border-t border-gray-900 flex flex-wrap gap-1 items-center justify-between">
               <div class="flex flex-wrap gap-1">
-                <button onclick="updateOrderStatus('${o.id}', 'Sedang Diproses')" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded text-[9px] font-bold">Proses</button>
-                <button onclick="updateOrderStatus('${o.id}', 'Robux Dikirim')" class="bg-cyan-600 hover:bg-cyan-500 text-black px-2 py-1 rounded text-[9px] font-bold">Kirim</button>
-                <button onclick="updateOrderStatus('${o.id}', 'Selesai')" class="bg-emerald-500 hover:bg-emerald-400 text-black px-2 py-1 rounded text-[9px] font-bold">Selesai</button>
-                <button onclick="updateOrderStatus('${o.id}', 'Dibatalkan')" class="bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded text-[9px] font-bold">Batal (Typo/Invalid)</button>
+                <button onclick="updateOrderStatus('${o.id}', 'Sedang Diproses', '${o.session_id}', '${o.username}')" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded text-[9px] font-bold">Proses</button>
+                <button onclick="updateOrderStatus('${o.id}', 'Robux Dikirim', '${o.session_id}', '${o.username}')" class="bg-cyan-600 hover:bg-cyan-500 text-black px-2 py-1 rounded text-[9px] font-bold">Kirim</button>
+                <button onclick="updateOrderStatus('${o.id}', 'Selesai', '${o.session_id}', '${o.username}')" class="bg-emerald-500 hover:bg-emerald-400 text-black px-2 py-1 rounded text-[9px] font-bold">Selesai</button>
+                <button onclick="updateOrderStatus('${o.id}', 'Dibatalkan', '${o.session_id}', '${o.username}')" class="bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded text-[9px] font-bold">Batal (Typo/Invalid)</button>
               </div>
               <button onclick="deleteOrderHistory('${o.id}')" class="bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-700/50 px-2 py-1 rounded text-[9px] font-bold flex items-center gap-1">
                 <i class="fa-solid fa-trash-can text-[9px]"></i> Hapus Riwayat
@@ -645,8 +732,27 @@
       renderOrders();
     }
 
-    async function updateOrderStatus(id, newStatus) {
+    async function updateOrderStatus(id, newStatus, sessionId, username) {
       await supabaseClient.from('orders').update({ status: newStatus }).eq('id', id);
+
+      if(newStatus === 'Selesai' && sessionId) {
+        await supabaseClient.from('chat_messages').insert([{
+          session_id: sessionId,
+          username: username || 'Pelanggan',
+          order_id: id,
+          sender: 'admin',
+          message: 'Jangan lupa untuk kasih testimoninya ya ka, itu sangat berarti bagi kami dan pembeli selanjutnya. Terimakasih sudah jajan di Boost Store 🙏😍'
+        }]);
+      } else if(newStatus === 'Dibatalkan' && sessionId) {
+        await supabaseClient.from('chat_messages').insert([{
+          session_id: sessionId,
+          username: username || 'Pelanggan',
+          order_id: id,
+          sender: 'admin',
+          message: 'Mohon maaf kak, pesanan Anda telah dibatalkan karena kendala verifikasi data akun/umur atau ketidaksesuaian pembayaran.'
+        }]);
+      }
+
       renderOrders();
     }
 
@@ -773,6 +879,46 @@
       if(dateInput) dateInput.value = '';
       alert(`Jadwal restok untuk Paket ${tier.toUpperCase()} telah dihapus (stok kembali normal).`);
       loadSchedulesInAdmin();
+    }
+
+    async function saveAllTiersSchedule() {
+      const dateInput = document.getElementById('schedule-date-all');
+      if(!dateInput.value) return alert('Pilih tanggal restok massal terlebih dahulu!');
+
+      const isoDate = new Date(dateInput.value + 'T00:00:00Z').toISOString();
+      const tiers = ['ekonomis', 'sultan', 'ceo', 'pejabat'];
+
+      for (const t of tiers) {
+        await supabaseClient.from('package_schedules').upsert({ tier: t, release_date: isoDate });
+      }
+
+      alert('Jadwal restok berhasil diterapkan serentak untuk seluruh 4 paket!');
+      loadSchedulesInAdmin();
+    }
+
+    async function clearAllTiersSchedule() {
+      const tiers = ['ekonomis', 'sultan', 'ceo', 'pejabat'];
+      for (const t of tiers) {
+        await supabaseClient.from('package_schedules').upsert({ tier: t, release_date: null });
+      }
+      const dateInput = document.getElementById('schedule-date-all');
+      if(dateInput) dateInput.value = '';
+      alert('Semua jadwal restok pada 4 paket telah dihapus.');
+      loadSchedulesInAdmin();
+    }
+
+    async function toggleAllFourTiersStock(newStatus) {
+      await supabaseClient.from('products').update({
+        stock_status: newStatus,
+        active: newStatus === 'available'
+      }).in('tier', ['ekonomis', 'sultan', 'ceo', 'pejabat']);
+
+      let statusLabel = 'Tersedia';
+      if (newStatus === 'no_stock') statusLabel = 'Belum Ada Stok';
+      if (newStatus === 'out_of_stock') statusLabel = 'Stok Habis';
+
+      alert(`Status seluruh 4 paket berhasil diubah menjadi: ${statusLabel}!`);
+      renderStocks();
     }
 
     async function renderStocks() {
