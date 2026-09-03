@@ -6,6 +6,7 @@
   <title>Admin Dashboard — BOOST STORE</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -23,6 +24,30 @@
               DEFAULT: '#D4AF37',
               dark: '#8C6D1F',
               accent: '#E5C06E'
+            }
+          },
+          animation: {
+            'shimmer-beam': 'shimmerBeam 3.5s infinite linear',
+            'pulse-glow': 'pulseGlow 2.5s ease-in-out infinite',
+            'badge-bounce': 'badgeBounce 2.2s infinite ease-in-out',
+            'spotlight-rotate': 'spotlightRotate 10s linear infinite'
+          },
+          keyframes: {
+            shimmerBeam: {
+              '0%': { backgroundPosition: '-250% 0' },
+              '100%': { backgroundPosition: '250% 0' }
+            },
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+              '50%': { opacity: '0.8', transform: 'scale(1.05)' }
+            },
+            badgeBounce: {
+              '0%, 100%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.03)' }
+            },
+            spotlightRotate: {
+              '0%': { transform: 'rotate(0deg)' },
+              '100%': { transform: 'rotate(360deg)' }
             }
           }
         }
@@ -44,16 +69,22 @@
       border: 1px solid #d4af37;
       box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
     }
-    .glow-gold {
-      filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6));
-    }
-    .glow-red {
-      filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
+    .glow-gold { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6)); }
+    .glow-red { filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8)); }
+    .glow-emerald { filter: drop-shadow(0 0 10px rgba(0, 255, 102, 0.6)); }
+    .gold-metallic-text {
+      background: linear-gradient(180deg, #FFFFFF 0%, #FFF3CA 25%, #E5BE53 50%, #9B7823 80%, #5E460E 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.9));
     }
     .qris-crisp {
       image-rendering: -webkit-optimize-contrast;
       image-rendering: crisp-edges;
     }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #050608; }
+    ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
   </style>
 </head>
 <body class="text-gray-200 font-sans antialiased min-h-screen flex flex-col justify-between p-3 sm:p-6">
@@ -97,11 +128,10 @@
 
       <div>
         <h1 class="text-base sm:text-xl font-black text-gold uppercase tracking-wider font-title">BOOST STORE — PANEL ADMIN</h1>
-        <p class="text-[11px] text-gray-400">Pusat Manajemen Toko, Stok, QRIS & Testimoni (Cloud Supabase)</p>
+        <p class="text-[11px] text-gray-400">Pusat Manajemen Toko, Iklan Media Sosial & Testimoni (Cloud Supabase)</p>
       </div>
     </div>
 
-    <!-- KONTROL OPERASIONAL TOKO & NAVIGASI TAB -->
     <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
       <div class="flex items-center bg-black/80 border border-gray-700 p-1 rounded-xl mr-1">
         <button id="btn-store-open" onclick="setStoreStatus('open')" class="px-2.5 py-1 text-[10px] font-bold rounded-lg transition">
@@ -114,7 +144,10 @@
 
       <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
         <button onclick="switchTab('orders')" id="btn-tab-orders" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition">Pesanan</button>
-        <button onclick="switchTab('stocks')" id="btn-tab-stocks" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition">Kelola Stok & Jadwal Paket</button>
+        <button onclick="switchTab('stocks')" id="btn-tab-stocks" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition">Stok & Jadwal</button>
+        <button onclick="switchTab('marketing')" id="btn-tab-marketing" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-bullhorn text-pink-400 text-[11px]"></i> Post/Video Ads
+        </button>
         <button onclick="switchTab('qris')" id="btn-tab-qris" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1">
           <i class="fa-solid fa-qrcode text-gold text-[10px]"></i> QRIS
         </button>
@@ -173,207 +206,286 @@
       <div id="orders-list" class="space-y-3"></div>
     </div>
 
-    <!-- TAB 2: KELOLA STOK, HARGA & JADWAL RESTOK PER KATEGORI PAKET -->
+    <!-- TAB 2: KELOLA STOK, HARGA & JADWAL RESTOK PER KATEGORI -->
     <div id="tab-stocks" class="hidden flex-1 overflow-y-auto space-y-6">
-      
-      <!-- ================= TOP TOOLBAR 3 BAGIAN: JAM BUKA/TUTUP (KIRI), JADWAL RESTOK 4 PAKET (TENGAH), KONTROL 3 TOMBOL MASSAL (KANAN) ================= -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
-        
-        <!-- BAGIAN KIRI: JAM BUKA & TUTUP OTOMATIS REAL-TIME -->
         <div class="bg-gradient-to-br from-blue-950/60 to-black border border-blue-500/50 p-3.5 rounded-2xl flex flex-col justify-between space-y-2 shadow-lg">
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-clock text-blue-400 text-sm"></i>
             <h4 class="text-xs font-black text-blue-300 uppercase tracking-wider">JAM OPERASIONAL TOKO (REAL-TIME)</h4>
           </div>
           <p class="text-[10px] text-gray-400">Atur jam buka dan tutup toko. Di luar jam ini, toko terkunci otomatis.</p>
-          
           <div class="grid grid-cols-2 gap-2 pt-1">
             <div>
               <label class="text-[9px] font-bold text-gray-400 block mb-0.5">Jam Buka:</label>
-              <input type="time" id="store-open-input" class="w-full bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-blue-400" />
+              <input type="time" id="store-open-input" value="18:00" class="w-full bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-blue-400" />
             </div>
             <div>
               <label class="text-[9px] font-bold text-gray-400 block mb-0.5">Jam Tutup:</label>
-              <input type="time" id="store-close-input" class="w-full bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-blue-400" />
+              <input type="time" id="store-close-input" value="23:00" class="w-full bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-blue-400" />
             </div>
           </div>
-
-          <button onclick="saveStoreHours()" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black py-1.5 rounded-lg transition shadow">
-            Simpan Jam Operasional
-          </button>
+          <button onclick="saveStoreHours()" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black py-1.5 rounded-lg transition shadow">Simpan Jam Operasional</button>
         </div>
 
-        <!-- BAGIAN TENGAH: JADWAL RESTOK MASSAL 4 PAKET -->
         <div class="bg-gradient-to-br from-yellow-950/70 to-black border border-gold/60 p-3.5 rounded-2xl flex flex-col justify-between space-y-2 text-center shadow-lg">
           <div class="flex items-center justify-center space-x-2">
             <i class="fa-solid fa-calendar-check text-gold text-sm"></i>
             <h4 class="text-xs font-black text-gold uppercase tracking-wider">JADWAL RESTOK (4 KATEGORI)</h4>
           </div>
-          <p class="text-[10px] text-gray-300">Tentukan satu tanggal rilis untuk seluruh 4 paket sekaligus.</p>
-          
+          <p class="text-[10px] text-gray-300">Tentukan tanggal rilis permanen untuk seluruh kategori & terhubung ke poster.</p>
           <div class="flex items-center justify-center gap-1.5 pt-1">
-            <input type="date" id="schedule-date-all" class="bg-black border border-gold/60 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold font-bold flex-1" />
-            <button onclick="saveAllTiersSchedule()" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1.5 rounded transition">
-              Terapkan
-            </button>
-            <button onclick="clearAllTiersSchedule()" class="text-red-400 hover:underline text-[10px] font-bold px-1">
-              Hapus
-            </button>
+            <input type="date" id="schedule-date-all" value="2040-01-27" class="bg-black border border-gold/60 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold font-bold flex-1" />
+            <button onclick="saveAllTiersSchedule()" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1.5 rounded transition">Terapkan</button>
+            <button onclick="clearAllTiersSchedule()" class="text-red-400 hover:underline text-[10px] font-bold px-1">Hapus</button>
           </div>
         </div>
 
-        <!-- BAGIAN KANAN: KONTROL STOK MASSAL 3 TOMBOL UNTUK 4 PAKET -->
         <div class="bg-gradient-to-br from-emerald-950/60 to-black border border-emerald-500/50 p-3.5 rounded-2xl flex flex-col justify-between space-y-2 shadow-lg">
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-boxes-stacked text-emerald-400 text-sm"></i>
             <h4 class="text-xs font-black text-emerald-300 uppercase tracking-wider">KONTROL STOK MASSAL (4 KATEGORI)</h4>
           </div>
-          <p class="text-[10px] text-gray-400">Ubah status ketersediaan seluruh item di 4 paket dalam satu klik.</p>
-          
+          <p class="text-[10px] text-gray-400">Ubah status ketersediaan item & otomatis tersinkron ke poster.</p>
           <div class="grid grid-cols-3 gap-1.5 pt-1">
-            <button onclick="toggleAllFourTiersStock('available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black py-1.5 px-1 rounded-lg transition text-center truncate">
-              Aktifkan Semua
-            </button>
-            <button onclick="toggleAllFourTiersStock('no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[9px] font-black py-1.5 px-1 rounded-lg transition text-center truncate">
-              Belum Ada Stok
-            </button>
-            <button onclick="toggleAllFourTiersStock('out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[9px] font-black py-1.5 px-1 rounded-lg transition text-center truncate">
-              Stok Habis
-            </button>
+            <button onclick="toggleAllFourTiersStock('available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black py-1.5 px-1 rounded-lg transition text-center truncate">Aktifkan Semua</button>
+            <button onclick="toggleAllFourTiersStock('no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[9px] font-black py-1.5 px-1 rounded-lg transition text-center truncate">Belum Ada Stok</button>
+            <button onclick="toggleAllFourTiersStock('out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[9px] font-black py-1.5 px-1 rounded-lg transition text-center truncate">Stok Habis</button>
           </div>
         </div>
-
       </div>
 
       <!-- 1. EKONOMIS -->
       <div class="bg-black/60 border border-gold/40 p-3.5 rounded-xl space-y-3">
-        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
-          <h4 class="text-xs sm:text-sm font-bold text-gold uppercase"><i class="fa-solid fa-cart-shopping mr-1"></i> 1. Kategori Paket Ekonomis</h4>
-          <div class="flex flex-wrap gap-1.5">
-            <button onclick="toggleAllCategoryStock('ekonomis', 'available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
-            <button onclick="toggleAllCategoryStock('ekonomis', 'no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Belum Ada Stok</button>
-            <button onclick="toggleAllCategoryStock('ekonomis', 'out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Stok Habis</button>
-          </div>
-        </div>
-
-        <div class="bg-black/50 border border-gold/30 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
-          <div class="flex items-center space-x-2">
-            <i class="fa-regular fa-calendar-days text-gold"></i>
-            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Ekonomis:</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <input type="date" id="schedule-date-ekonomis" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
-            <button onclick="saveTierSchedule('ekonomis')" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded transition">Terapkan Jadwal</button>
-            <button onclick="clearTierSchedule('ekonomis')" class="text-red-400 hover:underline text-[10px] font-bold">Hapus</button>
-          </div>
-        </div>
-
+        <h4 class="text-xs sm:text-sm font-bold text-gold uppercase"><i class="fa-solid fa-cart-shopping mr-1"></i> 1. Kategori Paket Ekonomis</h4>
         <div id="stock-group-ekonomis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
       <!-- 2. SULTAN -->
       <div class="bg-black/60 border border-emerald-500/40 p-3.5 rounded-xl space-y-3">
-        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
-          <h4 class="text-xs sm:text-sm font-bold text-emerald-400 uppercase"><i class="fa-solid fa-crown mr-1"></i> 2. Kategori Paket Sultan</h4>
-          <div class="flex flex-wrap gap-1.5">
-            <button onclick="toggleAllCategoryStock('sultan', 'available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
-            <button onclick="toggleAllCategoryStock('sultan', 'no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Belum Ada Stok</button>
-            <button onclick="toggleAllCategoryStock('sultan', 'out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Stok Habis</button>
-          </div>
-        </div>
-
-        <div class="bg-black/50 border border-emerald-500/30 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
-          <div class="flex items-center space-x-2">
-            <i class="fa-regular fa-calendar-days text-emerald-400"></i>
-            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Sultan:</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <input type="date" id="schedule-date-sultan" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
-            <button onclick="saveTierSchedule('sultan')" class="bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black px-3 py-1 rounded transition">Terapkan Jadwal</button>
-            <button onclick="clearTierSchedule('sultan')" class="text-red-400 hover:underline text-[10px] font-bold">Hapus</button>
-          </div>
-        </div>
-
+        <h4 class="text-xs sm:text-sm font-bold text-emerald-400 uppercase"><i class="fa-solid fa-crown mr-1"></i> 2. Kategori Paket Sultan</h4>
         <div id="stock-group-sultan" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
       <!-- 3. CEO -->
       <div class="bg-black/60 border border-purple-500/40 p-3.5 rounded-xl space-y-3">
-        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
-          <h4 class="text-xs sm:text-sm font-bold text-purple-400 uppercase"><i class="fa-solid fa-gem mr-1"></i> 3. Kategori Paket CEO</h4>
-          <div class="flex flex-wrap gap-1.5">
-            <button onclick="toggleAllCategoryStock('ceo', 'available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
-            <button onclick="toggleAllCategoryStock('ceo', 'no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Belum Ada Stok</button>
-            <button onclick="toggleAllCategoryStock('ceo', 'out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Stok Habis</button>
-          </div>
-        </div>
-
-        <div class="bg-black/50 border border-purple-500/30 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
-          <div class="flex items-center space-x-2">
-            <i class="fa-regular fa-calendar-days text-purple-400"></i>
-            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket CEO:</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <input type="date" id="schedule-date-ceo" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
-            <button onclick="saveTierSchedule('ceo')" class="bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-black px-3 py-1 rounded transition">Terapkan Jadwal</button>
-            <button onclick="clearTierSchedule('ceo')" class="text-red-400 hover:underline text-[10px] font-bold">Hapus</button>
-          </div>
-        </div>
-
+        <h4 class="text-xs sm:text-sm font-bold text-purple-400 uppercase"><i class="fa-solid fa-gem mr-1"></i> 3. Kategori Paket CEO</h4>
         <div id="stock-group-ceo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
       <!-- 4. PEJABAT -->
       <div class="bg-black/60 border border-red-500/70 p-3.5 rounded-xl space-y-3 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-        <div class="flex flex-wrap justify-between items-center gap-2 pb-2.5 border-b border-gray-800">
-          <h4 class="text-xs sm:text-sm font-bold text-red-400 uppercase flex items-center gap-1.5"><i class="fa-solid fa-landmark text-red-500 glow-red"></i> 4. Kategori Paket Pejabat</h4>
-          <div class="flex flex-wrap gap-1.5">
-            <button onclick="toggleAllCategoryStock('pejabat', 'available')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Aktifkan Semua</button>
-            <button onclick="toggleAllCategoryStock('pejabat', 'no_stock')" class="bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded">Belum Ada Stok</button>
-            <button onclick="toggleAllCategoryStock('pejabat', 'out_of_stock')" class="bg-red-700 hover:bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded">Stok Habis</button>
-          </div>
-        </div>
-
-        <div class="bg-black/50 border border-red-500/40 p-2.5 rounded-lg flex flex-wrap justify-between items-center gap-2 text-xs">
-          <div class="flex items-center space-x-2">
-            <i class="fa-regular fa-calendar-days text-red-400"></i>
-            <span class="text-[11px] font-bold text-gray-300">Jadwal Restok Paket Pejabat:</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <input type="date" id="schedule-date-pejabat" class="bg-black border border-gray-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-gold" />
-            <button onclick="saveTierSchedule('pejabat')" class="bg-red-600 hover:bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded transition">Terapkan Jadwal</button>
-            <button onclick="clearTierSchedule('pejabat')" class="text-red-400 hover:underline text-[10px] font-bold">Hapus</button>
-          </div>
-        </div>
-
+        <h4 class="text-xs sm:text-sm font-bold text-red-400 uppercase flex items-center gap-1.5"><i class="fa-solid fa-landmark text-red-500 glow-red"></i> 4. Kategori Paket Pejabat</h4>
         <div id="stock-group-pejabat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
     </div>
 
-    <!-- TAB 3: KELOLA GAMBAR QRIS -->
+    <!-- TAB 3: STUDIO MARKETING SOSIAL MEDIA -->
+    <div id="tab-marketing" class="hidden flex-1 overflow-y-auto space-y-6">
+      <div class="bg-black/80 border border-gold/50 p-4 sm:p-5 rounded-2xl shadow-xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-800 pb-3">
+          <div>
+            <h3 class="text-xs sm:text-base font-black text-gold uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-wand-magic-sparkles text-yellow-400"></i> Social Media Luxury Ads Studio
+            </h3>
+            <p class="text-[11px] text-gray-400">Tersinkron real-time, format teks seimbang dan terpusat di tengah kotak GUI!</p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-gray-400 uppercase">Format Output:</span>
+            <button onclick="setAdMode('poster')" id="btn-mode-poster" class="px-3 py-1 text-xs font-bold rounded-lg bg-gold text-black">Poster Gambar</button>
+            <button onclick="setAdMode('video')" id="btn-mode-video" class="px-3 py-1 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white">Animasi Video Ads</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-black/60 p-3 rounded-xl border border-gray-800">
+          <div>
+            <label class="block text-[10px] uppercase font-black text-pink-400 mb-1">
+              <i class="fa-brands fa-instagram mr-1"></i> Username Akun Instagram:
+            </label>
+            <input type="text" id="mkt-user-ig" value="COMING SOON!!!" oninput="handleMarketingSettingChange()" placeholder="COMING SOON!!!" class="w-full bg-black border border-pink-500/40 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-pink-400" />
+          </div>
+
+          <div>
+            <label class="block text-[10px] uppercase font-black text-cyan-400 mb-1">
+              <i class="fa-brands fa-tiktok mr-1"></i> Username Akun TikTok:
+            </label>
+            <input type="text" id="mkt-user-tiktok" value="@booststore.official" oninput="handleMarketingSettingChange()" placeholder="@username_tiktok" class="w-full bg-black border border-cyan-500/40 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-cyan-400" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[10px] uppercase font-black text-gold mb-1">
+              <i class="fa-solid fa-champagne-glasses text-yellow-400 mr-1"></i> Pilihan Event & Desain Unik:
+            </label>
+            <select id="mkt-event-preset" onchange="handleEventPresetChange()" class="w-full bg-black border border-gold/50 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-gold">
+              <option value="none">⭐ Tidak Ada Event (Hari-hari Normal)</option>
+              <option value="ramadhan">🌙 Spesial Bulan Suci Ramadhan & Idul Fitri</option>
+              <option value="grand_opening">🎉 Grand Opening BOOST STORE Official</option>
+              <option value="kemerdekaan">🇮🇩 Spesial HUT Kemerdekaan Indonesia 17 Agustus</option>
+              <option value="kartini">🌸 Spesial Hari Kartini (Emansipasi Gamers)</option>
+              <option value="weekend_sale">⚡ Weekend Super Flash Sale</option>
+              <option value="midnight_sale">🌌 Midnight Exclusive Top Up Sale</option>
+              <option value="custom">✨ Event Lainnya (Kustom Manual)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[10px] uppercase font-black text-gold mb-1">
+              <i class="fa-solid fa-share-nodes text-blue-400 mr-1"></i> Sosmed Ditampilkan di Poster:
+            </label>
+            <select id="mkt-platform-select" onchange="handleMarketingSettingChange()" class="w-full bg-black border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-gold">
+              <option value="tiktok">TikTok (@)</option>
+              <option value="instagram">Instagram (@)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[10px] uppercase font-black text-gold mb-1">
+              <i class="fa-solid fa-pen-fancy text-purple-400 mr-1"></i> Nama / Headline Event:
+            </label>
+            <input type="text" id="mkt-event-title" value="OFFICIAL PRICELIST ROBUX — BOOST STORE" oninput="handleMarketingSettingChange()" class="w-full bg-black border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-gold" />
+          </div>
+        </div>
+
+        <div id="custom-event-container" class="hidden bg-black/70 border border-gold/50 p-3 rounded-xl">
+          <label class="block text-[10px] uppercase font-black text-yellow-400 mb-1">
+            <i class="fa-solid fa-tag mr-1"></i> Masukkan Nama Event Kustom Anda Sendiri:
+          </label>
+          <input type="text" id="mkt-custom-event-input" placeholder="Contoh: SPESIAL ULANG TAHUN ADMIN BOOST STORE" oninput="handleCustomEventInput()" class="w-full bg-black border border-gold/60 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-gold" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="lg:col-span-7 flex flex-col items-center">
+          <div class="w-full flex justify-between items-center mb-2 px-1">
+            <span class="text-[11px] font-bold text-gray-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-eye text-emerald-400"></i> Desain Visual High-Quality (Semua Teks Rapi & Terpusat)
+            </span>
+          </div>
+
+          <div id="ad-capture-frame" class="w-full max-w-[480px] relative rounded-3xl overflow-hidden shadow-[0_0_40px_rgba(212,175,55,0.4)] border-2 border-gold/80 bg-[#050608] flex flex-col justify-between p-4 sm:p-5 select-none transition-all duration-300">
+            <div id="ad-bg-theme-layer" class="absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(212,175,55,0.22)_0%,transparent_65%)] pointer-events-none transition-all duration-500"></div>
+            
+            <div id="video-fx-layer" class="hidden absolute inset-0 pointer-events-none overflow-hidden">
+              <div class="absolute -top-32 -left-32 w-80 h-80 bg-gradient-to-br from-gold/30 to-transparent rounded-full blur-3xl animate-spotlight-rotate"></div>
+              <div class="absolute -bottom-32 -right-32 w-80 h-80 bg-gradient-to-tl from-purple-600/25 to-transparent rounded-full blur-3xl animate-pulse-glow"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent bg-[length:250%_100%] animate-shimmer-beam"></div>
+            </div>
+
+            <div class="relative z-10 text-center flex flex-col items-center mb-3">
+              <div class="flex items-center justify-center gap-2 mb-1.5">
+                <div class="w-7 h-7 flex items-center justify-center glow-gold">
+                  <svg viewBox="0 0 200 160" class="w-full h-full">
+                    <path d="M20,135 L180,135 L165,65 L125,95 L100,35 L75,95 L35,65 Z" fill="url(#royalGoldGrad)" stroke="#FFF8DC" stroke-width="4"/>
+                    <rect x="20" y="130" width="160" height="20" rx="4" fill="url(#crownBaseGrad)"/>
+                  </svg>
+                </div>
+                <span class="text-base sm:text-lg font-black font-title tracking-widest text-gold uppercase">BOOST STORE</span>
+              </div>
+              
+              <div id="ad-event-badge-container" class="my-0.5 w-full flex justify-center">
+                <span id="ad-event-tag" class="inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-yellow-500 via-gold to-yellow-300 text-black px-4 py-1 rounded-full text-[9px] sm:text-[10px] font-black tracking-wider uppercase shadow-[0_0_15px_rgba(212,175,55,0.7)] text-center animate-badge-bounce max-w-full">
+                  <span id="ad-event-icon">⭐</span> <span id="ad-event-title-text">OFFICIAL PRICELIST ROBUX — BOOST STORE</span>
+                </span>
+              </div>
+            </div>
+
+            <div id="ad-catalog-container" class="relative z-10 space-y-2.5"></div>
+
+            <div class="relative z-10 text-center space-y-2 pt-3 mt-3 border-t border-gold/40 flex flex-col items-center">
+              <div id="ad-social-pill" class="inline-flex items-center justify-center gap-2 text-[10px] sm:text-xs font-bold text-white bg-black/80 py-1.5 px-4 rounded-full border border-gold/50 shadow-md">
+                <i id="ad-social-icon" class="fa-brands fa-tiktok text-white"></i>
+                <span id="ad-social-handle" class="text-gold font-extrabold tracking-wide">@booststore.official</span>
+              </div>
+
+              <div class="text-[8px] sm:text-[9px] text-gray-300 font-semibold tracking-wider flex items-center justify-center gap-2 pb-0.5">
+                <span><i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i>100% Amanah</span>
+                <span>•</span>
+                <span><i class="fa-solid fa-bolt text-yellow-400 mr-1"></i>Instan QRIS</span>
+                <span>•</span>
+                <span><i class="fa-solid fa-lock text-gold mr-1"></i>Tanpa Password</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-wrap gap-2 w-full max-w-[480px]">
+            <button onclick="downloadPosterImage()" class="flex-1 bg-gradient-to-r from-gold to-yellow-500 hover:brightness-110 text-black font-black py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2">
+              <i class="fa-solid fa-download"></i> Unduh Poster Rapi HD (PNG)
+            </button>
+            <button onclick="toggleVideoAdRecording()" id="btn-toggle-video" class="px-4 bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-500/50 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-play"></i> Mode Animasi
+            </button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 space-y-4">
+          <div class="bg-black/70 border border-gold/40 p-4 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+              <h4 class="text-xs sm:text-sm font-black text-gold uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-pen-nib text-cyan-400"></i> Caption Siap Post (Tersinkron Otomatis)
+              </h4>
+              <button onclick="generateFreshCaption()" class="text-gold hover:underline text-[10px] font-bold flex items-center gap-1">
+                <i class="fa-solid fa-arrows-rotate"></i> Regenerate
+              </button>
+            </div>
+
+            <p class="text-[11px] text-gray-300 leading-relaxed">
+              Caption otomatis menyinkronkan status event pilihan, ketersediaan stok & jadwal restok terbaru, dilengkapi link toko:
+            </p>
+
+            <div class="relative">
+              <textarea id="ad-caption-text" rows="13" class="w-full bg-black/90 border border-gray-700 rounded-xl p-3 text-xs text-gray-200 font-sans leading-relaxed focus:outline-none focus:border-gold select-all"></textarea>
+              <button onclick="copyCaptionToClipboard()" class="absolute bottom-3 right-3 bg-gold hover:bg-yellow-400 text-black font-extrabold text-[10px] px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1">
+                <i class="fa-solid fa-copy"></i> Salin Caption & Link
+              </button>
+            </div>
+
+            <div class="p-2.5 bg-blue-950/40 border border-blue-500/40 rounded-xl text-[10px] text-blue-200 flex items-start gap-2">
+              <i class="fa-solid fa-circle-info text-blue-400 mt-0.5"></i>
+              <span>Link otomatis disertakan: <strong>https://imboost96-byte.github.io/boost-store/</strong>. Customer dapat langsung menekan atau menyalin link tersebut.</span>
+            </div>
+          </div>
+
+          <div class="bg-black/70 border border-gray-800 p-4 rounded-2xl space-y-3">
+            <h4 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-paper-plane text-yellow-400"></i> Publish Langsung ke Akun Anda
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button onclick="openSocialPublish('tiktok')" class="bg-black hover:bg-gray-900 text-white border border-gray-700 font-bold py-2 px-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow">
+                <i class="fa-brands fa-tiktok text-sm"></i> Buka TikTok
+              </button>
+              <button onclick="openSocialPublish('instagram')" class="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:brightness-110 text-white font-bold py-2 px-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow">
+                <i class="fa-brands fa-instagram text-sm"></i> Buka Instagram
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: KELOLA GAMBAR QRIS -->
     <div id="tab-qris" class="hidden flex-1 overflow-y-auto max-w-xl mx-auto w-full space-y-4">
       <div class="bg-black/70 border border-gold/40 p-4 sm:p-6 rounded-2xl text-center space-y-4">
         <div>
           <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider"><i class="fa-solid fa-qrcode mr-1"></i> Pengaturan QRIS Pembayaran</h3>
           <p class="text-xs text-gray-400 mt-1">Unggah gambar QRIS beresolusi tinggi agar mudah dipindai oleh pelanggan.</p>
         </div>
-
         <div class="bg-white p-3.5 sm:p-4 rounded-2xl inline-block border-2 border-gold max-w-[280px] sm:max-w-[340px] shadow-[0_0_20px_rgba(212,175,55,0.3)]">
           <img id="admin-qris-preview" src="qris-boost.jpeg" alt="QRIS Boost Store" class="w-full h-auto mx-auto rounded-xl object-contain qris-crisp" />
         </div>
-
         <div class="space-y-2">
           <label class="block text-xs font-bold text-gray-300">Pilih Gambar QRIS Baru (Format JPG / PNG / JPEG):</label>
           <input type="file" id="admin-qris-input" accept="image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-gray-800 file:text-gold cursor-pointer" />
         </div>
-
         <button onclick="saveCustomQris()" class="w-full bg-gradient-to-r from-gold to-yellow-500 text-black font-black py-2.5 rounded-lg text-xs uppercase tracking-wider hover:brightness-110">
           <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan & Perbarui QRIS
         </button>
       </div>
     </div>
 
-    <!-- TAB 4: KELOLA TESTIMONI PELANGGAN -->
+    <!-- TAB 5: KELOLA TESTIMONI PELANGGAN -->
     <div id="tab-testimonials" class="hidden flex-1 overflow-y-auto space-y-4">
       <div class="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-gray-800">
         <div>
@@ -382,23 +494,17 @@
         </div>
         <span class="text-xs text-gray-400" id="total-testi-count">0 Total Testimoni</span>
       </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div class="bg-black/60 border border-gold/40 p-3.5 rounded-xl flex flex-col">
           <div class="flex justify-between items-center pb-2 mb-3 border-b border-gold/20">
-            <h4 class="text-xs font-bold text-gold uppercase flex items-center gap-1.5">
-              <i class="fa-solid fa-crown text-yellow-400"></i> Ulasan Bintang 5
-            </h4>
+            <h4 class="text-xs font-bold text-gold uppercase flex items-center gap-1.5"><i class="fa-solid fa-crown text-yellow-400"></i> Ulasan Bintang 5</h4>
             <span id="admin-count-star-5" class="bg-yellow-500/20 text-yellow-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-yellow-500/30">0</span>
           </div>
           <div id="admin-testi-list-5" class="space-y-3 overflow-y-auto max-h-[460px] pr-1"></div>
         </div>
-
         <div class="bg-black/60 border border-gray-800 p-3.5 rounded-xl flex flex-col">
           <div class="flex justify-between items-center pb-2 mb-3 border-b border-gray-800">
-            <h4 class="text-xs font-bold text-gray-300 uppercase flex items-center gap-1.5">
-              <i class="fa-solid fa-comment-dots text-blue-400"></i> Masukan / Kritik (Bintang 1 - 4)
-            </h4>
+            <h4 class="text-xs font-bold text-gray-300 uppercase flex items-center gap-1.5"><i class="fa-solid fa-comment-dots text-blue-400"></i> Masukan / Kritik (Bintang 1 - 4)</h4>
             <span id="admin-count-star-low" class="bg-gray-800 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-700">0</span>
           </div>
           <div id="admin-testi-list-low" class="space-y-3 overflow-y-auto max-h-[460px] pr-1"></div>
@@ -406,13 +512,12 @@
       </div>
     </div>
 
-    <!-- TAB 5: LIVE CHAT MULTI-ROOM -->
+    <!-- TAB 6: LIVE CHAT MULTI-ROOM -->
     <div id="tab-chats" class="hidden flex-1 grid grid-cols-1 md:grid-cols-3 gap-3 overflow-hidden h-[500px]">
       <div class="border border-gray-800 rounded-xl p-2.5 bg-black/60 flex flex-col h-full overflow-hidden">
         <h4 class="text-xs font-black text-gold uppercase mb-2">Daftar Chat Masuk</h4>
         <div id="admin-chat-rooms" class="flex-1 overflow-y-auto space-y-1.5 pr-1"></div>
       </div>
-
       <div class="md:col-span-2 border border-gray-800 rounded-xl p-3 bg-black/60 flex flex-col h-full overflow-hidden">
         <div class="flex justify-between items-center pb-2 mb-2 border-b border-gray-800">
           <div>
@@ -428,18 +533,15 @@
             </button>
           </div>
         </div>
-
         <div id="admin-active-messages" class="flex-1 overflow-y-auto space-y-2 p-2.5 bg-black/40 rounded-lg border border-gray-900 text-xs mb-2">
           <p class="text-gray-500 text-center py-8">Belum ada chat yang dipilih.</p>
         </div>
-
         <div id="admin-chat-input-bar" class="hidden flex gap-1.5">
           <input type="text" id="admin-reply-input" placeholder="Ketik balasan..." class="flex-1 bg-black border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-gold" onkeypress="if(event.key==='Enter') sendAdminChat()" />
           <button onclick="sendAdminChat()" class="bg-emerald-500 text-black font-bold px-4 py-1.5 rounded-lg text-xs hover:brightness-110">Kirim</button>
         </div>
       </div>
     </div>
-
   </main>
 
   <!-- MODAL PREVIEW GAMBAR -->
@@ -460,29 +562,29 @@
 
   <script>
     const defaultCatalog = [
-      { id: 'ek-10', tier: 'ekonomis', robux: '10', price: 1800, stock_status: 'available' },
-      { id: 'ek-20', tier: 'ekonomis', robux: '20', price: 3500, stock_status: 'available' },
-      { id: 'ek-30', tier: 'ekonomis', robux: '30', price: 5200, stock_status: 'available' },
-      { id: 'ek-40', tier: 'ekonomis', robux: '40', price: 6900, stock_status: 'available' },
-      { id: 'ek-50', tier: 'ekonomis', robux: '50', price: 8500, stock_status: 'available' },
+      { id: 'ek-10', tier: 'ekonomis', robux: '10', price: 1800, stock_status: 'no_stock' },
+      { id: 'ek-20', tier: 'ekonomis', robux: '20', price: 3500, stock_status: 'no_stock' },
+      { id: 'ek-30', tier: 'ekonomis', robux: '30', price: 5200, stock_status: 'no_stock' },
+      { id: 'ek-40', tier: 'ekonomis', robux: '40', price: 6900, stock_status: 'no_stock' },
+      { id: 'ek-50', tier: 'ekonomis', robux: '50', price: 8500, stock_status: 'no_stock' },
       
-      { id: 'sl-100', tier: 'sultan', robux: '100', price: 16000, stock_status: 'available' },
-      { id: 'sl-200', tier: 'sultan', robux: '200', price: 32000, stock_status: 'available' },
-      { id: 'sl-300', tier: 'sultan', robux: '300', price: 48000, stock_status: 'available' },
-      { id: 'sl-400', tier: 'sultan', robux: '400', price: 63000, stock_status: 'available' },
-      { id: 'sl-500', tier: 'sultan', robux: '500', price: 78000, stock_status: 'available' },
+      { id: 'sl-100', tier: 'sultan', robux: '100', price: 16000, stock_status: 'no_stock' },
+      { id: 'sl-200', tier: 'sultan', robux: '200', price: 32000, stock_status: 'no_stock' },
+      { id: 'sl-300', tier: 'sultan', robux: '300', price: 48000, stock_status: 'no_stock' },
+      { id: 'sl-400', tier: 'sultan', robux: '400', price: 63000, stock_status: 'no_stock' },
+      { id: 'sl-500', tier: 'sultan', robux: '500', price: 78000, stock_status: 'no_stock' },
       
-      { id: 'co-1000', tier: 'ceo', robux: '1.000', price: 155000, stock_status: 'available' },
-      { id: 'co-2000', tier: 'ceo', robux: '2.000', price: 310000, stock_status: 'available' },
-      { id: 'co-3000', tier: 'ceo', robux: '3.000', price: 460000, stock_status: 'available' },
-      { id: 'co-4000', tier: 'ceo', robux: '4.000', price: 610000, stock_status: 'available' },
-      { id: 'co-5000', tier: 'ceo', robux: '5.000', price: 750000, stock_status: 'available' },
+      { id: 'co-1000', tier: 'ceo', robux: '1.000', price: 155000, stock_status: 'no_stock' },
+      { id: 'co-2000', tier: 'ceo', robux: '2.000', price: 310000, stock_status: 'no_stock' },
+      { id: 'co-3000', tier: 'ceo', robux: '3.000', price: 460000, stock_status: 'no_stock' },
+      { id: 'co-4000', tier: 'ceo', robux: '4.000', price: 610000, stock_status: 'no_stock' },
+      { id: 'co-5000', tier: 'ceo', robux: '5.000', price: 750000, stock_status: 'no_stock' },
 
-      { id: 'pj-6000', tier: 'pejabat', robux: '6.000', price: 0, stock_status: 'available' },
-      { id: 'pj-7000', tier: 'pejabat', robux: '7.000', price: 0, stock_status: 'available' },
-      { id: 'pj-8000', tier: 'pejabat', robux: '8.000', price: 0, stock_status: 'available' },
-      { id: 'pj-9000', tier: 'pejabat', robux: '9.000', price: 0, stock_status: 'available' },
-      { id: 'pj-10000', tier: 'pejabat', robux: '10.000', price: 0, stock_status: 'available' }
+      { id: 'pj-6000', tier: 'pejabat', robux: '6.000', price: 0, stock_status: 'no_stock' },
+      { id: 'pj-7000', tier: 'pejabat', robux: '7.000', price: 0, stock_status: 'no_stock' },
+      { id: 'pj-8000', tier: 'pejabat', robux: '8.000', price: 0, stock_status: 'no_stock' },
+      { id: 'pj-9000', tier: 'pejabat', robux: '9.000', price: 0, stock_status: 'no_stock' },
+      { id: 'pj-10000', tier: 'pejabat', robux: '10.000', price: 0, stock_status: 'no_stock' }
     ];
 
     const SUPABASE_URL = "https://ohjebpvdbaoejpnoaeaa.supabase.co";
@@ -490,6 +592,15 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let activeAdminRoomId = null;
+    let cachedProducts = defaultCatalog;
+    let cachedSchedules = {
+      ekonomis: '2040-01-27T00:00:00Z',
+      sultan: '2040-01-27T00:00:00Z',
+      ceo: '2040-01-27T00:00:00Z',
+      pejabat: '2040-01-27T00:00:00Z'
+    };
+    let currentAdMode = 'poster';
+    let isMarketingLoading = false;
 
     function parseNumericRobux(robuxStr) {
       return parseInt(String(robuxStr).replace(/\./g, ''), 10) || 0;
@@ -508,17 +619,6 @@
         gain1.connect(audioCtx.destination);
         osc1.start();
         osc1.stop(audioCtx.currentTime + 0.35);
-
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.12);
-        gain2.gain.setValueAtTime(0.18, audioCtx.currentTime + 0.12);
-        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.55);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start(audioCtx.currentTime + 0.12);
-        osc2.stop(audioCtx.currentTime + 0.55);
       } catch (e) {}
     }
 
@@ -564,38 +664,450 @@
     }
 
     function switchTab(tab) {
-      document.getElementById('tab-orders').classList.add('hidden');
-      document.getElementById('tab-stocks').classList.add('hidden');
-      document.getElementById('tab-qris').classList.add('hidden');
-      document.getElementById('tab-testimonials').classList.add('hidden');
-      document.getElementById('tab-chats').classList.add('hidden');
+      const tabs = ['orders', 'stocks', 'marketing', 'qris', 'testimonials', 'chats'];
+      tabs.forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`btn-tab-${t}`);
+        if(btn) btn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition';
+      });
 
-      document.getElementById('btn-tab-orders').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition';
-      document.getElementById('btn-tab-stocks').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition';
-      document.getElementById('btn-tab-qris').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1';
-      document.getElementById('btn-tab-testimonials').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition flex items-center gap-1';
-      document.getElementById('btn-tab-chats').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white transition relative';
+      const activeBtn = document.getElementById(`btn-tab-${tab}`);
+      if(activeBtn) activeBtn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition';
 
       if(tab === 'orders') {
         document.getElementById('tab-orders').classList.remove('hidden');
-        document.getElementById('btn-tab-orders').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition';
         renderOrders();
       } else if(tab === 'stocks') {
         document.getElementById('tab-stocks').classList.remove('hidden');
-        document.getElementById('btn-tab-stocks').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition';
         renderStocks();
+      } else if(tab === 'marketing') {
+        document.getElementById('tab-marketing').classList.remove('hidden');
+        loadMarketingSettingsFromDB();
       } else if(tab === 'qris') {
         document.getElementById('tab-qris').classList.remove('hidden');
-        document.getElementById('btn-tab-qris').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition flex items-center gap-1';
         loadQrisPreview();
       } else if(tab === 'testimonials') {
         document.getElementById('tab-testimonials').classList.remove('hidden');
-        document.getElementById('btn-tab-testimonials').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition flex items-center gap-1';
         renderAdminTestimonials();
       } else if(tab === 'chats') {
         document.getElementById('tab-chats').classList.remove('hidden');
-        document.getElementById('btn-tab-chats').className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black transition relative';
         renderChatRooms();
+      }
+    }
+
+    const eventThemesConfig = {
+      none: {
+        title: "OFFICIAL PRICELIST ROBUX — BOOST STORE",
+        icon: "⭐",
+        bgGradient: "radial-gradient(circle at 50% 12%, rgba(212, 175, 55, 0.22) 0%, transparent 65%)"
+      },
+      ramadhan: {
+        title: "KILAU BERKAH RAMADHAN — PROMO ROBUX",
+        icon: "🌙",
+        bgGradient: "radial-gradient(circle at 50% 12%, rgba(0, 255, 102, 0.22) 0%, rgba(212, 175, 55, 0.2) 40%, transparent 75%)"
+      },
+      grand_opening: {
+        title: "GRAND OPENING BOOST STORE OFFICIAL",
+        icon: "🎉",
+        bgGradient: "radial-gradient(circle at 50% 12%, rgba(212, 175, 55, 0.35) 0%, rgba(168, 85, 247, 0.2) 45%, transparent 75%)"
+      },
+      kemerdekaan: {
+        title: "PROMO MERDEKA — ROBUX SERBA KILAT",
+        icon: "🇮🇩",
+        bgGradient: "radial-gradient(circle at 50% 12%, rgba(239, 68, 68, 0.35) 0%, rgba(255, 255, 255, 0.1) 45%, transparent 75%)"
+      },
+      kartini: {
+        title: "SPESIAL HARI KARTINI — EMPOWERING GAMERS",
+        icon: "🌸",
+        bgGradient: "radial-gradient(circle at 50% 12%, rgba(236, 72, 153, 0.3) 0%, rgba(212, 175, 55, 0.2) 45%, transparent 75%)"
+      },
+      weekend_sale: {
+        title: "SUPER WEEKEND FLASH SALE ROBUX",
+        icon: "⚡",
+        bgGradient: "radial-gradient(circle at 50% 12%, rgba(234, 179, 8, 0.35) 0%, rgba(212, 175, 55, 0.2) 45%, transparent 75%)"
+      },
+      midnight_sale: {
+        title: "MIDNIGHT LUXURY TOP UP EXCLUSIVE",
+        icon: "🌌",
+        bgGradient: "radial-gradient(circle at 50% 12%, rgba(168, 85, 247, 0.35) 0%, rgba(59, 130, 246, 0.2) 45%, transparent 75%)"
+      },
+      custom: {
+        title: "PROMO EKSKLUSIF BOOST STORE",
+        icon: "✨",
+        bgGradient: "radial-gradient(circle at 50% 12%, rgba(212, 175, 55, 0.3) 0%, rgba(0, 255, 102, 0.15) 45%, transparent 75%)"
+      }
+    };
+
+    async function loadMarketingSettingsFromDB() {
+      try {
+        isMarketingLoading = true;
+        const { data } = await supabaseClient.from('marketing_settings').select('*').eq('id', 1).single();
+        if (data) {
+          document.getElementById('mkt-user-ig').value = data.ig_username || 'COMING SOON!!!';
+          document.getElementById('mkt-user-tiktok').value = data.tiktok_username || '@booststore.official';
+          document.getElementById('mkt-platform-select').value = data.target_platform || 'tiktok';
+          document.getElementById('mkt-event-preset').value = data.event_preset || 'none';
+          document.getElementById('mkt-event-title').value = data.event_title || 'OFFICIAL PRICELIST ROBUX — BOOST STORE';
+          
+          const customContainer = document.getElementById('custom-event-container');
+          if (data.event_preset === 'custom') {
+            customContainer.classList.remove('hidden');
+            document.getElementById('mkt-custom-event-input').value = data.custom_event_title || '';
+          } else {
+            customContainer.classList.add('hidden');
+          }
+        }
+      } catch (e) {} finally {
+        isMarketingLoading = false;
+        updateMarketingDisplay();
+      }
+    }
+
+    async function saveMarketingSettingsToDB() {
+      if (isMarketingLoading) return;
+      const payload = {
+        ig_username: document.getElementById('mkt-user-ig').value.trim() || 'COMING SOON!!!',
+        tiktok_username: document.getElementById('mkt-user-tiktok').value.trim() || '@booststore.official',
+        target_platform: document.getElementById('mkt-platform-select').value,
+        event_preset: document.getElementById('mkt-event-preset').value,
+        event_title: document.getElementById('mkt-event-title').value.trim(),
+        custom_event_title: document.getElementById('mkt-custom-event-input').value.trim(),
+        updated_at: new Date().toISOString()
+      };
+      try {
+        await supabaseClient.from('marketing_settings').upsert({ id: 1, ...payload });
+      } catch (err) {}
+    }
+
+    function handleMarketingSettingChange() {
+      updateMarketingDisplay();
+      saveMarketingSettingsToDB();
+    }
+
+    function handleEventPresetChange() {
+      const presetKey = document.getElementById('mkt-event-preset').value;
+      const customContainer = document.getElementById('custom-event-container');
+
+      if (presetKey === 'custom') {
+        customContainer.classList.remove('hidden');
+        const customInput = document.getElementById('mkt-custom-event-input').value.trim();
+        document.getElementById('mkt-event-title').value = customInput || 'EVENT SPESIAL BOOST STORE';
+      } else {
+        customContainer.classList.add('hidden');
+        const theme = eventThemesConfig[presetKey];
+        if (theme) {
+          document.getElementById('mkt-event-title').value = theme.title;
+        }
+      }
+      handleMarketingSettingChange();
+    }
+
+    function handleCustomEventInput() {
+      const val = document.getElementById('mkt-custom-event-input').value.trim();
+      document.getElementById('mkt-event-title').value = val || 'EVENT SPESIAL BOOST STORE';
+      handleMarketingSettingChange();
+    }
+
+    function setAdMode(mode) {
+      currentAdMode = mode;
+      const btnPoster = document.getElementById('btn-mode-poster');
+      const btnVideo = document.getElementById('btn-mode-video');
+      const fxLayer = document.getElementById('video-fx-layer');
+      const btnToggle = document.getElementById('btn-toggle-video');
+
+      if (mode === 'video') {
+        btnVideo.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-gold text-black';
+        btnPoster.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-gray-800 text-gray-400 hover:text-white';
+        fxLayer.classList.remove('hidden');
+        btnToggle.innerHTML = '<i class="fa-solid fa-pause"></i> Matikan Animasi';
+      } else {
+        btnPoster.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-gold text-black';
+        btnVideo.className = 'px-3 py-1 text-xs font-bold rounded-lg bg-gray-800 text-gray-400 hover:text-white';
+        fxLayer.classList.add('hidden');
+        btnToggle.innerHTML = '<i class="fa-solid fa-play"></i> Mode Animasi';
+      }
+    }
+
+    function toggleVideoAdRecording() {
+      setAdMode(currentAdMode === 'poster' ? 'video' : 'poster');
+    }
+
+    async function loadSchedules() {
+      try {
+        const { data } = await supabaseClient.from('package_schedules').select('*');
+        if (data && data.length > 0) {
+          data.forEach(s => {
+            cachedSchedules[s.tier] = s.release_date;
+          });
+          const validDate = data.find(s => s.release_date)?.release_date;
+          if (validDate && document.getElementById('schedule-date-all')) {
+            document.getElementById('schedule-date-all').value = new Date(validDate).toISOString().split('T')[0];
+          }
+        }
+      } catch (err) {}
+    }
+
+    function renderProductCardHTML(p, isSingleRow = false) {
+      const priceFmt = Number(p.price) > 0 ? `Rp ${Number(p.price).toLocaleString('id-ID')}` : 'Hubungi CS';
+      const containerClass = isSingleRow 
+        ? 'col-span-2 mx-auto w-full max-w-[260px]' 
+        : 'w-full';
+
+      return `
+        <div class="${containerClass} bg-black/90 border border-gray-800 rounded-lg px-2 h-10 flex items-center justify-center shadow-sm">
+          <div class="flex items-center justify-center w-full space-x-2.5 leading-none">
+            <div class="w-1/2 flex items-center justify-center space-x-1">
+              <span class="font-black text-white text-[11px]">${p.robux}</span>
+              <span class="text-[8px] text-emerald-400 font-bold uppercase">R$</span>
+            </div>
+            <div class="h-3.5 w-[1px] bg-gold/45 shrink-0"></div>
+            <div class="w-1/2 flex items-center justify-center">
+              <span class="text-gold font-extrabold text-[10px] tracking-tight whitespace-nowrap">${priceFmt}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateMarketingDisplay() {
+      const igUser = document.getElementById('mkt-user-ig').value.trim() || 'COMING SOON!!!';
+      const tiktokUser = document.getElementById('mkt-user-tiktok').value.trim() || '@booststore.official';
+      const platform = document.getElementById('mkt-platform-select').value;
+      const eventTitle = document.getElementById('mkt-event-title').value.trim();
+
+      const presetKey = document.getElementById('mkt-event-preset').value;
+      const theme = eventThemesConfig[presetKey] || eventThemesConfig.none;
+
+      document.getElementById('ad-bg-theme-layer').style.backgroundImage = theme.bgGradient;
+      document.getElementById('ad-event-icon').innerText = theme.icon;
+      document.getElementById('ad-event-title-text').innerText = eventTitle || theme.title;
+
+      const socialIcon = document.getElementById('ad-social-icon');
+      const socialHandle = document.getElementById('ad-social-handle');
+
+      if (platform === 'tiktok') {
+        socialIcon.className = 'fa-brands fa-tiktok text-white';
+        socialHandle.innerText = tiktokUser;
+      } else {
+        socialIcon.className = 'fa-brands fa-instagram text-pink-400';
+        socialHandle.innerText = igUser;
+      }
+
+      const catalogBox = document.getElementById('ad-catalog-container');
+      const now = new Date();
+      
+      const tiers = [
+        { key: 'ekonomis', title: '1. PAKET EKONOMIS (10 - 50 R$)', border: 'border-gold/50' },
+        { key: 'sultan', title: '2. PAKET SULTAN (100 - 500 R$)', border: 'border-emerald-500/50' },
+        { key: 'ceo', title: '3. PAKET CEO (1.000 - 5.000 R$)', border: 'border-purple-500/50' },
+        { key: 'pejabat', title: '4. PAKET PEJABAT (6.000 - 10.000 R$)', border: 'border-red-500/70' }
+      ];
+
+      catalogBox.innerHTML = tiers.map(t => {
+        const items = cachedProducts.filter(p => p.tier === t.key);
+        const isPejabat = t.key === 'pejabat';
+
+        let badgeLabel = 'READY STOK';
+        let badgeClass = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+
+        const scheduleDateStr = cachedSchedules[t.key];
+        let hasActiveSchedule = false;
+        let formattedScheduleDate = '';
+
+        if (scheduleDateStr) {
+          const sDate = new Date(scheduleDateStr);
+          if (sDate > now) {
+            hasActiveSchedule = true;
+            formattedScheduleDate = sDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            badgeLabel = `RESTOK: ${formattedScheduleDate}`;
+            badgeClass = 'bg-amber-950 text-amber-300 border border-amber-500/50';
+          }
+        }
+
+        if (!hasActiveSchedule && items.length > 0 && !isPejabat) {
+          const firstStockStatus = items[0].stock_status;
+          if (firstStockStatus === 'no_stock') {
+            badgeLabel = 'BELUM ADA STOK';
+            badgeClass = 'bg-amber-900/60 text-amber-300 border border-amber-500/40';
+          } else if (firstStockStatus === 'out_of_stock') {
+            badgeLabel = 'STOK HABIS';
+            badgeClass = 'bg-red-950 text-red-400 border border-red-500/40';
+          }
+        }
+
+        if (isPejabat) {
+          badgeLabel = 'TERBATAS';
+          badgeClass = 'bg-red-950 text-red-300 border border-red-500/50';
+        }
+
+        let innerRows = '';
+
+        if(isPejabat) {
+          innerRows = `
+            <div class="bg-gradient-to-r from-red-950/80 via-black to-red-950/80 border border-red-500/80 rounded-xl py-2.5 px-3 text-center my-0.5 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+              <span class="block text-[11px] sm:text-xs font-black text-red-400 tracking-[0.2em] text-center animate-pulse">
+                🚨 COMING SOON!!! 🚨
+              </span>
+              <p class="text-[8px] text-gray-300 mt-0.5 text-center">Paket 6.000 s/d 10.000 Robux Segera Dibuka!</p>
+            </div>
+          `;
+        } else {
+          innerRows = `
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              ${items.map((p, idx) => {
+                const isLastOddItem = (items.length % 2 !== 0) && (idx === items.length - 1);
+                return renderProductCardHTML(p, isLastOddItem);
+              }).join('')}
+            </div>
+          `;
+        }
+
+        return `
+          <div class="bg-black/60 border ${t.border} rounded-xl p-2.5 backdrop-blur-sm">
+            <div class="flex justify-between items-center pb-1.5 border-b border-gray-900 px-1">
+              <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-white">
+                ${t.title}
+              </span>
+              <span class="text-[7px] uppercase font-black px-1.5 py-0.5 rounded ${badgeClass}">
+                ${badgeLabel}
+              </span>
+            </div>
+            ${innerRows}
+          </div>
+        `;
+      }).join('');
+
+      generateFreshCaption();
+    }
+
+    function generateFreshCaption() {
+      const igUser = document.getElementById('mkt-user-ig').value.trim() || 'COMING SOON!!!';
+      const tiktokUser = document.getElementById('mkt-user-tiktok').value.trim() || '@booststore.official';
+      const eventTitle = document.getElementById('mkt-event-title').value.trim() || 'OFFICIAL PRICELIST ROBUX';
+
+      const now = new Date();
+
+      function getTierStatusText(tierKey) {
+        const schedule = cachedSchedules[tierKey];
+        if (schedule) {
+          const sDate = new Date(schedule);
+          if (sDate > now) {
+            return `⏳ (Restok Rilis: ${sDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })})`;
+          }
+        }
+        const sampleItem = cachedProducts.find(p => p.tier === tierKey);
+        if (sampleItem) {
+          if (sampleItem.stock_status === 'no_stock') return '⚠️ (Status: Belum Ada Stok)';
+          if (sampleItem.stock_status === 'out_of_stock') return '❌ (Status: Stok Habis)';
+        }
+        return '✅ (Status: Ready Stok)';
+      }
+
+      const ekoStatus = getTierStatusText('ekonomis');
+      const sultanStatus = getTierStatusText('sultan');
+      const ceoStatus = getTierStatusText('ceo');
+
+      const ekoPrices = cachedProducts.filter(p => p.tier === 'ekonomis').map(p => `• ${p.robux} Robux : Rp ${Number(p.price).toLocaleString('id-ID')}`).join('\n');
+      const sultanPrices = cachedProducts.filter(p => p.tier === 'sultan').map(p => `• ${p.robux} Robux : Rp ${Number(p.price).toLocaleString('id-ID')}`).join('\n');
+      const ceoPrices = cachedProducts.filter(p => p.tier === 'ceo').map(p => `• ${p.robux} Robux : Rp ${Number(p.price).toLocaleString('id-ID')}`).join('\n');
+
+      const captionTemplate = 
+`✨ ${eventTitle.toUpperCase()} ✨
+👑 Official Top Up Robux Murah & Terpercaya — BOOST STORE! 👑
+
+Upgrade avatar & gamepass impian kamu sekarang tanpa antri! Proses kilat hitungan menit, pembayaran aman QRIS otomatis, dan 100% amanah tanpa minta password akun.
+
+🛒 DAFTAR HARGA LENGKAP REAL-TIME:
+
+📦 1. PAKET EKONOMIS ${ekoStatus}:
+${ekoPrices}
+
+👑 2. PAKET SULTAN ${sultanStatus}:
+${sultanPrices}
+
+💎 3. PAKET CEO ${ceoStatus}:
+${ceoPrices}
+
+🏛️ 4. PAKET PEJABAT (6.000 s/d 10.000 Robux):
+🚨 COMING SOON!!! 🚨
+(Segera rilis dengan penawaran spesial, stay tuned!)
+
+🌟 Keunggulan Top Up di Boost Store:
+✔️ Bergaransi & Terpercaya
+✔️ TANPA PASSWORD (Cukup kirimkan Username Roblox)
+✔️ Pembayaran Cepat & Otomatis via QRIS
+✔️ Layanan Customer Service Ramah
+
+🔗 ORDER LANGSUNG LEWAT WEBSITE RESMI:
+👉 https://imboost96-byte.github.io/boost-store/
+
+📱 Akun Media Sosial Resmi:
+• TikTok: ${tiktokUser}
+• Instagram: ${igUser}
+
+#RobuxMurah #TopUpRobux #RobloxIndonesia #BoostStore #JualRobuxMurah #PromoRoblox`;
+
+      document.getElementById('ad-caption-text').value = captionTemplate;
+    }
+
+    function copyCaptionToClipboard() {
+      const text = document.getElementById('ad-caption-text');
+      text.select();
+      navigator.clipboard.writeText(text.value).then(() => {
+        alert('Caption & Link Website berhasil disalin ke clipboard!');
+      }).catch(() => {
+        alert('Silakan salin teks caption secara manual.');
+      });
+    }
+
+    async function downloadPosterImage() {
+      const frame = document.getElementById('ad-capture-frame');
+      try {
+        if (document.fonts) {
+          await document.fonts.ready;
+        }
+
+        const canvas = await html2canvas(frame, {
+          scale: 3,
+          useCORS: true,
+          backgroundColor: '#050608',
+          logging: false,
+          onclone: (clonedDoc) => {
+            const clonedFrame = clonedDoc.getElementById('ad-capture-frame');
+            if(clonedFrame) {
+              clonedFrame.style.width = '480px';
+              clonedFrame.style.maxWidth = '480px';
+              clonedFrame.style.minWidth = '480px';
+              clonedFrame.style.maxHeight = 'none';
+              clonedFrame.style.height = 'auto';
+              clonedFrame.style.overflow = 'visible';
+            }
+          }
+        });
+
+        const link = document.createElement('a');
+        link.download = `BOOST_STORE_POSTER_RAPI_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (err) {
+        alert('Gagal membuat gambar poster: ' + err.message);
+      }
+    }
+
+    function openSocialPublish(platform) {
+      copyCaptionToClipboard();
+      const igUser = document.getElementById('mkt-user-ig').value.trim().replace('@', '');
+      const tiktokUser = document.getElementById('mkt-user-tiktok').value.trim().replace('@', '');
+
+      if(platform === 'tiktok') {
+        const url = tiktokUser ? `https://www.tiktok.com/@${tiktokUser}` : 'https://www.tiktok.com/';
+        window.open(url, '_blank');
+      } else if(platform === 'instagram') {
+        if (igUser === 'COMING SOON!!!') {
+          return alert('Akun Instagram masih dalam status COMING SOON!!!');
+        }
+        const url = igUser ? `https://www.instagram.com/${igUser}/` : 'https://www.instagram.com/';
+        window.open(url, '_blank');
       }
     }
 
@@ -851,36 +1363,6 @@
       document.getElementById('proof-modal').classList.remove('flex');
     }
 
-    async function loadSchedulesInAdmin() {
-      const { data } = await supabaseClient.from('package_schedules').select('*');
-      if(data) {
-        data.forEach(s => {
-          const inputEl = document.getElementById(`schedule-date-${s.tier}`);
-          if(inputEl) {
-            inputEl.value = s.release_date ? new Date(s.release_date).toISOString().split('T')[0] : '';
-          }
-        });
-      }
-    }
-
-    async function saveTierSchedule(tier) {
-      const dateInput = document.getElementById(`schedule-date-${tier}`);
-      if(!dateInput.value) return alert('Pilih tanggal restok terlebih dahulu!');
-
-      const isoDate = new Date(dateInput.value + 'T00:00:00Z').toISOString();
-      await supabaseClient.from('package_schedules').upsert({ tier: tier, release_date: isoDate });
-      alert(`Jadwal restok untuk Paket ${tier.toUpperCase()} berhasil diterapkan!`);
-      loadSchedulesInAdmin();
-    }
-
-    async function clearTierSchedule(tier) {
-      await supabaseClient.from('package_schedules').upsert({ tier: tier, release_date: null });
-      const dateInput = document.getElementById(`schedule-date-${tier}`);
-      if(dateInput) dateInput.value = '';
-      alert(`Jadwal restok untuk Paket ${tier.toUpperCase()} telah dihapus (stok kembali normal).`);
-      loadSchedulesInAdmin();
-    }
-
     async function saveAllTiersSchedule() {
       const dateInput = document.getElementById('schedule-date-all');
       if(!dateInput.value) return alert('Pilih tanggal restok massal terlebih dahulu!');
@@ -890,21 +1372,25 @@
 
       for (const t of tiers) {
         await supabaseClient.from('package_schedules').upsert({ tier: t, release_date: isoDate });
+        cachedSchedules[t] = isoDate;
       }
 
-      alert('Jadwal restok berhasil diterapkan serentak untuk seluruh 4 paket!');
-      loadSchedulesInAdmin();
+      alert('Jadwal restok berhasil disimpan permanen & tersinkron ke Poster & Caption!');
+      renderStocks();
+      updateMarketingDisplay();
     }
 
     async function clearAllTiersSchedule() {
       const tiers = ['ekonomis', 'sultan', 'ceo', 'pejabat'];
       for (const t of tiers) {
         await supabaseClient.from('package_schedules').upsert({ tier: t, release_date: null });
+        cachedSchedules[t] = null;
       }
       const dateInput = document.getElementById('schedule-date-all');
       if(dateInput) dateInput.value = '';
-      alert('Semua jadwal restok pada 4 paket telah dihapus.');
-      loadSchedulesInAdmin();
+      alert('Semua jadwal restok telah dihapus & kembali ke status ketersediaan normal.');
+      renderStocks();
+      updateMarketingDisplay();
     }
 
     async function toggleAllFourTiersStock(newStatus) {
@@ -913,16 +1399,22 @@
         active: newStatus === 'available'
       }).in('tier', ['ekonomis', 'sultan', 'ceo', 'pejabat']);
 
-      let statusLabel = 'Tersedia';
-      if (newStatus === 'no_stock') statusLabel = 'Belum Ada Stok';
-      if (newStatus === 'out_of_stock') statusLabel = 'Stok Habis';
+      cachedProducts.forEach(p => {
+        p.stock_status = newStatus;
+        p.active = (newStatus === 'available');
+      });
 
-      alert(`Status seluruh 4 paket berhasil diubah menjadi: ${statusLabel}!`);
+      alert(`Status stok seluruh 4 kategori berhasil diubah & tersinkron ke Poster & Caption!`);
       renderStocks();
+      updateMarketingDisplay();
     }
 
     async function renderStocks() {
       const { data: products } = await supabaseClient.from('products').select('*').order('display_order', { ascending: true });
+      if(products && products.length > 0) {
+        cachedProducts = products;
+      }
+
       const ekoBox = document.getElementById('stock-group-ekonomis');
       const sltBox = document.getElementById('stock-group-sultan');
       const ceoBox = document.getElementById('stock-group-ceo');
@@ -933,9 +1425,7 @@
       ceoBox.innerHTML = '';
       pjbBox.innerHTML = '';
 
-      if(!products) return;
-
-      products.forEach(p => {
+      cachedProducts.forEach(p => {
         const currentStatus = p.stock_status || (p.active !== false ? 'available' : 'out_of_stock');
 
         const itemHtml = `
@@ -972,7 +1462,7 @@
         if(p.tier === 'pejabat') pjbBox.innerHTML += itemHtml;
       });
 
-      loadSchedulesInAdmin();
+      updateMarketingDisplay();
     }
 
     async function updateProductStockStatus(productId, newStatus) {
@@ -980,7 +1470,15 @@
         stock_status: newStatus,
         active: newStatus === 'available'
       }).eq('id', productId);
+      
+      const found = cachedProducts.find(p => p.id === productId);
+      if(found) {
+        found.stock_status = newStatus;
+        found.active = (newStatus === 'available');
+      }
+
       renderStocks();
+      updateMarketingDisplay();
     }
 
     async function saveProductPrice(productId) {
@@ -989,16 +1487,13 @@
       if(isNaN(newPrice) || newPrice < 0) return alert('Harga harus berupa angka valid (minimal 0)!');
 
       await supabaseClient.from('products').update({ price: newPrice }).eq('id', productId);
-      alert('Harga berhasil disimpan & langsung diperbarui ke seluruh dunia!');
-      renderStocks();
-    }
+      
+      const found = cachedProducts.find(p => p.id === productId);
+      if(found) found.price = newPrice;
 
-    async function toggleAllCategoryStock(tierName, newStatus) {
-      await supabaseClient.from('products').update({ 
-        stock_status: newStatus,
-        active: newStatus === 'available'
-      }).eq('tier', tierName);
+      alert('Harga berhasil disimpan & langsung diperbarui ke seluruh dunia & Poster!');
       renderStocks();
+      updateMarketingDisplay();
     }
 
     async function renderChatRooms() {
@@ -1149,8 +1644,19 @@
     /* REALTIME SUBSCRIPTIONS */
     supabaseClient.channel('admin_realtime_channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => renderOrders())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => renderStocks())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'package_schedules' }, () => renderStocks())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        renderStocks();
+        updateMarketingDisplay();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'package_schedules' }, () => {
+        loadSchedules().then(() => {
+          renderStocks();
+          updateMarketingDisplay();
+        });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'marketing_settings' }, () => {
+        loadMarketingSettingsFromDB();
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'testimonials' }, () => renderAdminTestimonials())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'store_settings' }, () => {
         renderStoreStatusControls();
@@ -1166,7 +1672,10 @@
       .subscribe();
 
     renderOrders();
-    renderStocks();
+    loadSchedules().then(() => {
+      renderStocks();
+      loadMarketingSettingsFromDB();
+    });
     renderAdminTestimonials();
     loadQrisPreview();
     renderStoreStatusControls();
