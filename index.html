@@ -6,7 +6,6 @@
   <title>Admin Dashboard — BOOST STORE</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -80,6 +79,7 @@
 
   <div id="mobile-sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
 
+  <!-- SIDEBAR NAVIGASI -->
   <aside id="main-sidebar" class="fixed md:sticky top-0 h-screen z-50 w-72 md:w-64 bg-[#0A0C13] border-r border-gold/25 flex flex-col justify-between py-5 px-3 transition-transform duration-300 transform -translate-x-full md:translate-x-0 shadow-2xl shrink-0 overflow-y-auto">
     <div>
       <div class="flex items-center justify-between px-2 mb-6">
@@ -183,6 +183,7 @@
 
     <main class="flex-1 p-3 sm:p-5 md:p-8 space-y-4 sm:space-y-6 max-w-7xl w-full mx-auto">
       
+      <!-- 4 METRIC UTAMA -->
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         <div class="bg-cardBg border border-cardBorder p-3.5 sm:p-5 rounded-2xl flex items-center justify-between shadow-lg relative overflow-hidden group hover:border-gold/40 transition">
           <div class="truncate">
@@ -321,124 +322,56 @@
         </div>
       </div>
 
-      <!-- TAB 3: MARKETING SOSMED -->
+      <!-- TAB 3: MARKETING SOSMED (UPLOAD FILE POSTER IDENTIK QRIS DENGAN PENYIMPANAN SUPABASE PERMANEN) -->
       <div id="tab-marketing" class="hidden space-y-4 sm:space-y-6">
-        <div class="bg-cardBg border border-cardBorder p-3.5 sm:p-6 rounded-2xl shadow-xl space-y-4">
+        <div class="bg-cardBg border border-cardBorder p-4 sm:p-6 rounded-2xl shadow-xl space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-800 pb-3">
             <div>
-              <h3 class="text-xs sm:text-base font-black text-gold uppercase tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-wand-magic-sparkles text-yellow-400"></i> Social Media Ads Studio
+              <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-bullhorn text-pink-400"></i> Upload Poster Promosi Toko
               </h3>
-              <p class="text-[10px] sm:text-[11px] text-gray-400">Tersinkron real-time termasuk potongan diskon aktif.</p>
+              <p class="text-xs text-gray-400 mt-0.5">Unggah gambar poster yang otomatis tersimpan permanen di Supabase.</p>
             </div>
-            <div class="flex items-center gap-2">
-              <button onclick="setAdMode('poster')" id="btn-mode-poster" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black shadow">Poster</button>
-              <button onclick="setAdMode('video')" id="btn-mode-video" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-300 hover:text-white">Animasi</button>
-            </div>
+            <span class="px-3 py-1 text-xs font-bold rounded-lg bg-gold text-black shadow">Auto Synced</span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-black/60 p-3 rounded-xl border border-gray-800">
-            <div>
-              <label class="block text-[10px] uppercase font-black text-pink-400 mb-1">Username Akun Instagram:</label>
-              <input type="text" id="mkt-user-ig" value="COMING SOON!!!" oninput="handleMarketingSettingChange()" class="w-full bg-black border border-pink-500/40 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold" />
-            </div>
-            <div>
-              <label class="block text-[10px] uppercase font-black text-cyan-400 mb-1">Username Akun TikTok:</label>
-              <input type="text" id="mkt-user-tiktok" value="@booststore.official" oninput="handleMarketingSettingChange()" class="w-full bg-black border border-cyan-500/40 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[10px] uppercase font-black text-gold mb-1">Event & Desain:</label>
-              <select id="mkt-event-preset" onchange="handleEventPresetChange()" class="w-full bg-black border border-gold/50 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
-                <option value="none">⭐ Normal</option>
-                <option value="ramadhan">🌙 Spesial Ramadhan</option>
-                <option value="grand_opening">🎉 Grand Opening</option>
-                <option value="kemerdekaan">🇮🇩 Spesial HUT RI 17 Agustus</option>
-                <option value="kartini">🌸 Hari Kartini</option>
-                <option value="weekend_sale">⚡ Weekend Flash Sale</option>
-                <option value="midnight_sale">🌌 Midnight Sale</option>
-                <option value="custom">✨ Kustom Manual</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] uppercase font-black text-gold mb-1">Sosmed Ditampilkan:</label>
-              <select id="mkt-platform-select" onchange="handleMarketingSettingChange()" class="w-full bg-black border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
-                <option value="tiktok">TikTok (@)</option>
-                <option value="instagram">Instagram (@)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] uppercase font-black text-gold mb-1">Headline Event:</label>
-              <input type="text" id="mkt-event-title" value="OFFICIAL PRICELIST ROBUX — BOOST STORE" oninput="handleMarketingSettingChange()" class="w-full bg-black border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold" />
-            </div>
-          </div>
-
-          <div id="custom-event-container" class="hidden bg-black/70 border border-gold/50 p-3 rounded-xl">
-            <label class="block text-[10px] uppercase font-black text-yellow-400 mb-1">Nama Event Kustom:</label>
-            <input type="text" id="mkt-custom-event-input" placeholder="Contoh: PROMO SPESIAL ADMIN" oninput="handleCustomEventInput()" class="w-full bg-black border border-gold/60 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
-          <div class="lg:col-span-7 flex flex-col items-center">
-            <div id="ad-capture-frame" class="w-full max-w-[480px] relative rounded-3xl overflow-hidden shadow-[0_0_40px_rgba(212,175,55,0.4)] border-2 border-gold/80 bg-[#050608] flex flex-col justify-between p-3.5 sm:p-5 select-none">
-              <div id="ad-bg-theme-layer" class="absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(212,175,55,0.22)_0%,transparent_65%)] pointer-events-none"></div>
-              
-              <div class="relative z-10 text-center flex flex-col items-center mb-3">
-                <div class="flex items-center justify-center gap-2 mb-1.5">
-                  <div class="w-7 h-7 flex items-center justify-center glow-gold">
-                    <svg viewBox="0 0 200 160" class="w-full h-full">
-                      <path d="M20,135 L180,135 L165,65 L125,95 L100,35 L75,95 L35,65 Z" fill="url(#royalGoldGrad)" stroke="#FFF8DC" stroke-width="4"/>
-                      <rect x="20" y="130" width="160" height="20" rx="4" fill="url(#crownBaseGrad)"/>
-                    </svg>
-                  </div>
-                  <span class="text-base sm:text-lg font-black font-title tracking-widest text-gold uppercase">BOOST STORE</span>
-                </div>
-                <div class="my-0.5 w-full flex justify-center">
-                  <span id="ad-event-tag" class="inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-yellow-500 via-gold to-yellow-300 text-black px-3 sm:px-4 py-1 rounded-full text-[8px] sm:text-[10px] font-black tracking-wider uppercase shadow">
-                    <span id="ad-event-icon">⭐</span> <span id="ad-event-title-text">OFFICIAL PRICELIST ROBUX</span>
-                  </span>
-                </div>
+          <!-- PRATINJAU POSTER & UPLOAD FILE IDENTIK SISTEM QRIS -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div class="lg:col-span-6 flex flex-col items-center space-y-3">
+              <div class="bg-black/90 p-2 sm:p-3 rounded-2xl border-2 border-gold max-w-[360px] w-full shadow-2xl flex items-center justify-center">
+                <img id="admin-poster-preview" src="IMG_20260908_151721.jpg" alt="Poster Boost Store" class="w-full h-auto rounded-xl object-contain shadow" />
               </div>
-
-              <div id="ad-catalog-container" class="relative z-10 space-y-2.5"></div>
-
-              <div class="relative z-10 text-center space-y-2 pt-3 mt-3 border-t border-gold/40 flex flex-col items-center">
-                <div class="inline-flex items-center justify-center gap-2 text-[10px] sm:text-xs font-bold text-white bg-black/80 py-1.5 px-4 rounded-full border border-gold/50 shadow-md">
-                  <i id="ad-social-icon" class="fa-brands fa-tiktok text-white"></i>
-                  <span id="ad-social-handle" class="text-gold font-extrabold tracking-wide">@booststore.official</span>
-                </div>
+              <input type="file" id="admin-poster-input" accept="image/*" class="w-full max-w-[360px] text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-gray-800 file:text-gold cursor-pointer" />
+              <div class="flex gap-2 w-full max-w-[360px]">
+                <button onclick="saveCustomPoster()" class="flex-1 bg-gradient-to-r from-gold to-yellow-500 text-black font-black py-2.5 rounded-xl text-xs uppercase tracking-wider hover:brightness-110 shadow-lg flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <span>Simpan Poster</span>
+                </button>
+                <button onclick="previewPosterModal()" class="px-3.5 bg-gray-800 hover:bg-gray-700 text-gold border border-gold/40 rounded-xl text-xs font-bold">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
               </div>
             </div>
 
-            <div class="mt-3 flex gap-2 w-full max-w-[480px]">
-              <button onclick="downloadPosterImage()" class="flex-1 bg-gradient-to-r from-gold to-yellow-500 hover:brightness-110 text-black font-black py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-lg">
-                <i class="fa-solid fa-download mr-1"></i> Unduh Poster
-              </button>
-            </div>
-          </div>
-
-          <div class="lg:col-span-5 space-y-4">
-            <div class="bg-cardBg border border-cardBorder p-4 rounded-2xl space-y-3 shadow-lg">
+            <!-- CAPTION PROMOSI SIAP PAKAI -->
+            <div class="lg:col-span-6 space-y-3">
               <div class="flex justify-between items-center pb-2 border-b border-gray-800">
-                <h4 class="text-xs sm:text-sm font-black text-gold uppercase tracking-wider">Caption Siap Post</h4>
-                <button onclick="generateFreshCaption()" class="text-gold hover:underline text-[10px] font-bold"><i class="fa-solid fa-arrows-rotate"></i> Regenerate</button>
+                <h4 class="text-xs sm:text-sm font-black text-gold uppercase tracking-wider">Caption Promosi Siap Post</h4>
+                <button onclick="generateFreshCaption()" class="text-gold hover:underline text-[10px] font-bold"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
               </div>
               <textarea id="ad-caption-text" rows="11" class="w-full bg-black/90 border border-gray-700 rounded-xl p-3 text-xs text-gray-200 font-sans leading-relaxed focus:outline-none focus:border-gold select-all"></textarea>
-              <button onclick="copyCaptionToClipboard()" class="w-full bg-gold hover:bg-yellow-400 text-black font-extrabold text-[10px] py-2 rounded-lg shadow-md">Salin Caption & Link</button>
+              <button onclick="copyCaptionToClipboard()" class="w-full bg-gold hover:bg-yellow-400 text-black font-extrabold text-xs py-2.5 rounded-xl shadow-md uppercase tracking-wider">Salin Caption & Link</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- TAB 4: QRIS -->
+      <!-- TAB 4: QRIS (UPLOAD FILE QRIS TERSIMPAN PERMANEN DI SUPABASE) -->
       <div id="tab-qris" class="hidden max-w-xl mx-auto space-y-4">
         <div class="bg-cardBg border border-cardBorder p-4 sm:p-6 rounded-2xl text-center space-y-4 shadow-xl">
           <div>
-            <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider"><i class="fa-solid fa-qrcode mr-1.5"></i> QRIS Pembayaran</h3>
-            <p class="text-xs text-gray-400 mt-1">Unggah gambar QRIS resolusi tinggi.</p>
+            <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider"><i class="fa-solid fa-qrcode mr-1.5"></i> QRIS Pembayaran Toko</h3>
+            <p class="text-xs text-gray-400 mt-1">Unggah gambar QRIS baru yang langsung tersimpan permanen di Supabase.</p>
           </div>
           <div class="bg-white p-3 rounded-2xl inline-block border-2 border-gold max-w-[280px]">
             <img id="admin-qris-preview" src="qris-boost.jpeg" alt="QRIS Boost Store" class="w-full h-auto mx-auto rounded-xl object-contain qris-crisp" />
@@ -464,7 +397,6 @@
 
       <!-- TAB 6: LIVE CHAT MULTI-ROOM (RESPONSIF MOBILE & DESKTOP) -->
       <div id="tab-chats" class="hidden flex flex-col md:grid md:grid-cols-3 gap-3 sm:gap-4 h-[580px]">
-        <!-- LIST ROOM CHAT -->
         <div id="chat-rooms-container" class="w-full bg-cardBg border border-cardBorder rounded-2xl p-3 flex flex-col h-full overflow-hidden shadow">
           <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-800">
             <h4 class="text-xs font-black text-gold uppercase px-1">Daftar Chat Masuk</h4>
@@ -473,7 +405,6 @@
           <div id="admin-chat-rooms" class="flex-1 overflow-y-auto space-y-1.5 pr-1"></div>
         </div>
 
-        <!-- DETAIL CHAT ROOM AKTIF -->
         <div id="chat-detail-container" class="hidden md:flex md:col-span-2 bg-cardBg border border-cardBorder rounded-2xl p-3 sm:p-4 flex-col h-full overflow-hidden shadow">
           <div class="flex justify-between items-center pb-2 mb-2 border-b border-gray-800 gap-2">
             <div class="flex items-center space-x-2 truncate">
@@ -556,8 +487,6 @@
     let cachedOrders = [];
     let cachedSchedules = { ekonomis: '2040-01-27T00:00:00Z', sultan: '2040-01-27T00:00:00Z', ceo: '2040-01-27T00:00:00Z', pejabat: '2040-01-27T00:00:00Z' };
     let globalDiscountPercent = 0;
-    let currentAdMode = 'poster';
-    let isMarketingLoading = false;
 
     function toggleSidebar() {
       const sidebar = document.getElementById('main-sidebar');
@@ -649,7 +578,6 @@
       document.getElementById('card-stat-discount').innerText = `${val}% OFF`;
       alert(`Diskon massal ${val}% untuk semua paket diterapkan!`);
       renderStocks();
-      updateMarketingDisplay();
     }
 
     async function resetGlobalDiscount() {
@@ -659,7 +587,6 @@
       document.getElementById('card-stat-discount').innerText = '0% OFF';
       alert('Diskon massal direset ke 0%!');
       renderStocks();
-      updateMarketingDisplay();
     }
 
     function switchTab(tab) {
@@ -687,7 +614,7 @@
 
       if(tab === 'orders') renderOrders();
       if(tab === 'stocks') renderStocks();
-      if(tab === 'marketing') loadMarketingSettingsFromDB();
+      if(tab === 'marketing') loadPosterPreview();
       if(tab === 'qris') loadQrisPreview();
       if(tab === 'testimonials') renderAdminTestimonials();
       if(tab === 'chats') {
@@ -718,78 +645,63 @@
       renderOrdersListDOM(filtered);
     }
 
-    async function loadMarketingSettingsFromDB() {
+    /* SISTEM POSTER PERMANEN SUPABASE (PERSIS QRIS) */
+    async function loadPosterPreview() {
       try {
-        isMarketingLoading = true;
-        const { data } = await supabaseClient.from('marketing_settings').select('*').eq('id', 1).single();
-        if (data) {
-          document.getElementById('mkt-user-ig').value = data.ig_username || 'COMING SOON!!!';
-          document.getElementById('mkt-user-tiktok').value = data.tiktok_username || '@booststore.official';
-          document.getElementById('mkt-platform-select').value = data.target_platform || 'tiktok';
-          document.getElementById('mkt-event-preset').value = data.event_preset || 'none';
-          document.getElementById('mkt-event-title').value = data.event_title || 'OFFICIAL PRICELIST ROBUX — BOOST STORE';
-          
-          const customContainer = document.getElementById('custom-event-container');
-          if (data.event_preset === 'custom') {
-            customContainer.classList.remove('hidden');
-            document.getElementById('mkt-custom-event-input').value = data.custom_event_title || '';
-          } else {
-            customContainer.classList.add('hidden');
-          }
+        const { data } = await supabaseClient.from('marketing_settings').select('poster_image').eq('id', 1).single();
+        if (data && data.poster_image) {
+          document.getElementById('admin-poster-preview').src = data.poster_image;
         }
-      } catch (e) {} finally {
-        isMarketingLoading = false;
-        updateMarketingDisplay();
-      }
-    }
-
-    async function saveMarketingSettingsToDB() {
-      if (isMarketingLoading) return;
-      const payload = {
-        ig_username: document.getElementById('mkt-user-ig').value.trim() || 'COMING SOON!!!',
-        tiktok_username: document.getElementById('mkt-user-tiktok').value.trim() || '@booststore.official',
-        target_platform: document.getElementById('mkt-platform-select').value,
-        event_preset: document.getElementById('mkt-event-preset').value,
-        event_title: document.getElementById('mkt-event-title').value.trim(),
-        custom_event_title: document.getElementById('mkt-custom-event-input').value.trim(),
-        updated_at: new Date().toISOString()
-      };
-      try {
-        await supabaseClient.from('marketing_settings').upsert({ id: 1, ...payload });
       } catch (err) {}
+      generateFreshCaption();
     }
 
-    function handleMarketingSettingChange() {
-      updateMarketingDisplay();
-      saveMarketingSettingsToDB();
+    function saveCustomPoster() {
+      const fileInput = document.getElementById('admin-poster-input');
+      if (!fileInput.files.length) return alert('Pilih gambar poster terlebih dahulu!');
+      
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const base64Poster = e.target.result;
+        await supabaseClient.from('marketing_settings').upsert({
+          id: 1,
+          poster_image: base64Poster,
+          updated_at: new Date().toISOString()
+        });
+        document.getElementById('admin-poster-preview').src = base64Poster;
+        alert('Gambar poster berhasil disimpan permanen di database!');
+      };
+      reader.readAsDataURL(fileInput.files[0]);
     }
 
-    function handleEventPresetChange() {
-      const presetKey = document.getElementById('mkt-event-preset').value;
-      const customContainer = document.getElementById('custom-event-container');
-      if (presetKey === 'custom') {
-        customContainer.classList.remove('hidden');
-      } else {
-        customContainer.classList.add('hidden');
-      }
-      handleMarketingSettingChange();
+    function previewPosterModal() {
+      const img = document.getElementById('admin-poster-preview');
+      viewImageModal(img.src, 'Pratinjau Poster Boost Store');
     }
 
-    function handleCustomEventInput() {
-      handleMarketingSettingChange();
+    function generateFreshCaption() {
+      const captionTemplate = 
+`✨ OFFICIAL PRICELIST ROBUX — BOOST STORE ✨
+👑 Official Top Up Robux Murah & Terpercaya! 👑
+
+Upgrade item, avatar & gamepass Roblox favoritmu sekarang juga!
+✅ Proses Kilat Cukup Username Roblox (Tanpa Password)
+✅ Pembayaran QRIS Otomatis & Aman
+✅ 100% Amanah & Bergaransi
+
+🔗 WEB RESMI PEMBELIAN:
+👉 https://imboost96-byte.github.io/boost-store/
+
+📱 TikTok: @booststore_official
+#RobuxMurah #TopUpRobux #RobloxIndonesia #BoostStoreOfficial`;
+
+      document.getElementById('ad-caption-text').value = captionTemplate;
     }
 
-    function setAdMode(mode) {
-      currentAdMode = mode;
-      const btnPoster = document.getElementById('btn-mode-poster');
-      const btnVideo = document.getElementById('btn-mode-video');
-      if(mode === 'video') {
-        btnVideo.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black shadow';
-        btnPoster.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-400 hover:text-white';
-      } else {
-        btnPoster.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gold text-black shadow';
-        btnVideo.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-800 text-gray-400 hover:text-white';
-      }
+    function copyCaptionToClipboard() {
+      const text = document.getElementById('ad-caption-text');
+      text.select();
+      navigator.clipboard.writeText(text.value).then(() => alert('Caption disalin!'));
     }
 
     async function loadSchedules() {
@@ -803,77 +715,7 @@
       } catch (err) {}
     }
 
-    function updateMarketingDisplay() {
-      const tiktokUser = document.getElementById('mkt-user-tiktok').value.trim() || '@booststore.official';
-      const eventTitle = document.getElementById('mkt-event-title').value.trim();
-      document.getElementById('ad-event-title-text').innerText = eventTitle;
-      document.getElementById('ad-social-handle').innerText = tiktokUser;
-
-      const catalogBox = document.getElementById('ad-catalog-container');
-      const tiers = [
-        { key: 'ekonomis', title: '1. PAKET EKONOMIS', border: 'border-gold/50' },
-        { key: 'sultan', title: '2. PAKET SULTAN', border: 'border-emerald-500/50' },
-        { key: 'ceo', title: '3. PAKET CEO', border: 'border-purple-500/50' },
-        { key: 'pejabat', title: '4. PAKET PEJABAT', border: 'border-red-500/70' }
-      ];
-
-      catalogBox.innerHTML = tiers.map(t => {
-        const items = cachedProducts.filter(p => p.tier === t.key);
-        return `
-          <div class="bg-black/60 border ${t.border} rounded-xl p-2.5">
-            <span class="text-[9px] font-black uppercase text-white">${t.title}</span>
-            <div class="grid grid-cols-2 gap-1.5 pt-1">
-              ${items.map(p => {
-                const disc = getEffectiveDiscount(p);
-                const finalP = calculateFinalPrice(p.price, disc);
-                return `
-                  <div class="bg-black/90 border border-gray-800 rounded px-2 py-1 flex items-center justify-between text-[10px]">
-                    <span class="font-bold text-white">${p.robux} R$</span>
-                    <span class="text-gold font-extrabold">Rp ${finalP.toLocaleString('id-ID')}</span>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      generateFreshCaption();
-    }
-
-    function generateFreshCaption() {
-      const tiktokUser = document.getElementById('mkt-user-tiktok').value.trim() || '@booststore.official';
-      const eventTitle = document.getElementById('mkt-event-title').value.trim() || 'OFFICIAL PRICELIST ROBUX';
-      const captionTemplate = 
-`✨ ${eventTitle.toUpperCase()} ✨
-👑 Official Top Up Robux Murah & Terpercaya — BOOST STORE! 👑
-
-Upgrade item & gamepass kamu sekarang tanpa antri! Proses kilat hitungan menit, pembayaran aman QRIS otomatis, dan 100% amanah tanpa password.
-
-🔗 ORDER LANGSUNG LEWAT WEBSITE RESMI:
-👉 https://imboost96-byte.github.io/boost-store/
-
-📱 TikTok: ${tiktokUser}
-#RobuxMurah #TopUpRobux #RobloxIndonesia #BoostStore`;
-
-      document.getElementById('ad-caption-text').value = captionTemplate;
-    }
-
-    function copyCaptionToClipboard() {
-      const text = document.getElementById('ad-caption-text');
-      text.select();
-      navigator.clipboard.writeText(text.value).then(() => alert('Caption disalin!'));
-    }
-
-    async function downloadPosterImage() {
-      const frame = document.getElementById('ad-capture-frame');
-      const canvas = await html2canvas(frame, { scale: 2, backgroundColor: '#050608' });
-      const link = document.createElement('a');
-      link.download = `POSTER_BOOST_STORE_${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    }
-
+    /* SISTEM QRIS PERMANEN SUPABASE */
     async function loadQrisPreview() {
       const { data } = await supabaseClient.from('store_settings').select('qris_image').eq('id', 1).single();
       if(data && data.qris_image) document.getElementById('admin-qris-preview').src = data.qris_image;
@@ -886,7 +728,7 @@ Upgrade item & gamepass kamu sekarang tanpa antri! Proses kilat hitungan menit, 
       reader.onload = async function(e) {
         await supabaseClient.from('store_settings').update({ qris_image: e.target.result }).eq('id', 1);
         loadQrisPreview();
-        alert('Gambar QRIS berhasil diperbarui!');
+        alert('Gambar QRIS berhasil disimpan permanen di database!');
       };
       reader.readAsDataURL(fileInput.files[0]);
     }
@@ -1057,7 +899,6 @@ Upgrade item & gamepass kamu sekarang tanpa antri! Proses kilat hitungan menit, 
           `;
         }).join('');
       });
-      updateMarketingDisplay();
     }
 
     async function updateProductStockStatus(productId, newStatus) {
@@ -1117,7 +958,6 @@ Upgrade item & gamepass kamu sekarang tanpa antri! Proses kilat hitungan menit, 
       renderChatRooms();
       renderActiveMessages();
 
-      // Responsif Mobile: Alihkan tampilan dari list room ke pesan obrolan
       if(window.innerWidth < 768) {
         document.getElementById('chat-rooms-container').classList.add('hidden');
         document.getElementById('chat-detail-container').classList.remove('hidden');
@@ -1223,7 +1063,6 @@ Upgrade item & gamepass kamu sekarang tanpa antri! Proses kilat hitungan menit, 
       renderChatRooms();
     }
 
-    // RESPONSIF SAAT HAPUS CHAT (UNTUK MOBILE DAN DESKTOP)
     async function deleteSelectedChat() {
       if(!activeAdminRoomId || !confirm('Hapus seluruh riwayat chat ini?')) return;
       const targetId = activeAdminRoomId;
@@ -1233,7 +1072,6 @@ Upgrade item & gamepass kamu sekarang tanpa antri! Proses kilat hitungan menit, 
       
       activeAdminRoomId = null;
       
-      // Reset UI Chat Aktif
       document.getElementById('chatting-with-label').innerText = 'Pilih sesi chat...';
       document.getElementById('chatting-status-label').innerText = '';
       document.getElementById('btn-end-chat').classList.add('hidden');
@@ -1245,7 +1083,6 @@ Upgrade item & gamepass kamu sekarang tanpa antri! Proses kilat hitungan menit, 
 
       await renderChatRooms();
 
-      // Jika di layar mobile, otomatis kembalikan ke list daftar chat
       if(window.innerWidth < 768) {
         backToRoomListMobile();
       }
@@ -1267,7 +1104,11 @@ Upgrade item & gamepass kamu sekarang tanpa antri! Proses kilat hitungan menit, 
     supabaseClient.channel('admin_realtime_channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => renderOrders())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => renderStocks())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'store_settings' }, () => renderStoreStatusControls())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'store_settings' }, () => {
+        renderStoreStatusControls();
+        loadQrisPreview();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'marketing_settings' }, () => loadPosterPreview())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_rooms' }, () => renderChatRooms())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => {
         if(payload.new && payload.new.sender === 'user') {
@@ -1283,7 +1124,7 @@ Upgrade item & gamepass kamu sekarang tanpa antri! Proses kilat hitungan menit, 
 
     renderOrders();
     loadSchedules().then(() => renderStocks());
-    loadMarketingSettingsFromDB();
+    loadPosterPreview();
     renderAdminTestimonials();
     loadQrisPreview();
     renderStoreStatusControls();
