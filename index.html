@@ -25,9 +25,9 @@
               dark: '#8C6D1F',
               accent: '#E5C06E'
             },
-            adminBg: '#07080C',
-            cardBg: '#0E1118',
-            cardBorder: '#1A1F2C'
+            adminBg: '#050608',
+            cardBg: '#0D111A',
+            cardBorder: '#1F2637'
           }
         }
       }
@@ -35,10 +35,52 @@
   </script>
   <style>
     body {
-      background-color: #07080C;
+      background-color: #050608;
       color: #E2E8F0;
       -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
     }
+
+    /* ANIMASI LATAR BELAKANG BLACK & GOLD */
+    .bg-animated-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: -20;
+      background: #040507;
+      background-image: 
+        radial-gradient(at 15% 15%, rgba(212, 175, 55, 0.18) 0px, transparent 55%),
+        radial-gradient(at 85% 20%, rgba(140, 109, 31, 0.22) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(229, 192, 110, 0.12) 0px, transparent 60%),
+        radial-gradient(at 20% 85%, rgba(212, 175, 55, 0.2) 0px, transparent 55%),
+        radial-gradient(at 80% 80%, rgba(140, 109, 31, 0.25) 0px, transparent 55%);
+      animation: meshPulse 12s ease-in-out infinite alternate;
+    }
+    @keyframes meshPulse {
+      0% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+      50% { transform: scale(1.08) rotate(1.5deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+    }
+
+    /* PARTIKEL EMAS MELAYANG */
+    .particles-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -10;
+      pointer-events: none;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.7) 1px, transparent 1.5px),
+        radial-gradient(circle at 35% 65%, rgba(255, 235, 140, 0.8) 1.5px, transparent 2px),
+        radial-gradient(circle at 75% 30%, rgba(212, 175, 55, 0.6) 1.2px, transparent 2px),
+        radial-gradient(circle at 85% 85%, rgba(255, 215, 0, 0.7) 1.5px, transparent 2px),
+        radial-gradient(circle at 55% 15%, rgba(255, 255, 255, 0.8) 1px, transparent 1.5px);
+      background-size: 320px 320px;
+      animation: particleDrift 24s linear infinite;
+    }
+    @keyframes particleDrift {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-320px) rotate(1deg); }
+    }
+
     .glow-gold { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5)); }
     .gold-metallic-text {
       background: linear-gradient(180deg, #FFFFFF 0%, #FFF3CA 25%, #E5BE53 50%, #9B7823 80%, #5E460E 100%);
@@ -51,7 +93,11 @@
     ::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 4px; }
   </style>
 </head>
-<body class="font-sans antialiased min-h-screen flex bg-adminBg text-gray-200 selection:bg-gold selection:text-black overflow-x-hidden">
+<body class="font-sans antialiased min-h-screen flex bg-adminBg text-gray-200 selection:bg-gold selection:text-black overflow-x-hidden relative">
+
+  <!-- BACKGROUND ANIMASI BLACK & GOLD -->
+  <div class="bg-animated-mesh"></div>
+  <div class="particles-layer"></div>
 
   <svg class="hidden">
     <defs>
@@ -80,7 +126,7 @@
   <div id="mobile-sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
 
   <!-- SIDEBAR NAVIGASI -->
-  <aside id="main-sidebar" class="fixed md:sticky top-0 h-screen z-50 w-72 md:w-64 bg-[#0A0C13] border-r border-gold/25 flex flex-col justify-between py-5 px-3 transition-transform duration-300 transform -translate-x-full md:translate-x-0 shadow-2xl shrink-0 overflow-y-auto">
+  <aside id="main-sidebar" class="fixed md:sticky top-0 h-screen z-50 w-72 md:w-64 bg-[#06080E]/95 backdrop-blur-md border-r border-gold/30 flex flex-col justify-between py-5 px-3 transition-transform duration-300 transform -translate-x-full md:translate-x-0 shadow-2xl shrink-0 overflow-y-auto">
     <div>
       <div class="flex items-center justify-between px-2 mb-6">
         <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('orders')">
@@ -141,7 +187,7 @@
 
     <div class="pt-4 mt-6 border-t border-gray-900">
       <span class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-2 px-1">Status Toko:</span>
-      <div class="grid grid-cols-2 gap-1.5 bg-black/60 p-1.5 rounded-xl border border-gray-800">
+      <div class="grid grid-cols-2 gap-1.5 bg-black/70 p-1.5 rounded-xl border border-gray-800">
         <button id="btn-store-open" onclick="setStoreStatus('open')" class="py-1.5 text-[10px] font-bold rounded-lg transition text-center">
           <i class="fa-solid fa-door-open mr-1"></i> Buka
         </button>
@@ -153,7 +199,7 @@
   </aside>
 
   <div class="flex-1 flex flex-col min-w-0 min-h-screen">
-    <header class="h-16 border-b border-gray-800/80 bg-[#0A0C13]/90 backdrop-blur-md px-3 sm:px-6 md:px-8 flex items-center justify-between sticky top-0 z-30">
+    <header class="h-16 border-b border-gold/25 bg-[#06080E]/90 backdrop-blur-md px-3 sm:px-6 md:px-8 flex items-center justify-between sticky top-0 z-30 shadow-md">
       <div class="flex items-center space-x-2.5 sm:space-x-4">
         <button onclick="toggleSidebar()" class="md:hidden text-gray-300 hover:text-white p-2 rounded-lg bg-black/50 border border-gray-800 focus:outline-none">
           <i class="fa-solid fa-bars text-sm"></i>
@@ -164,7 +210,7 @@
       <div class="flex items-center space-x-2 sm:space-x-4 md:space-x-6">
         <div class="relative w-36 sm:w-56 md:w-72">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[11px]"></i>
-          <input type="text" id="admin-global-search" oninput="handleAdminSearch(this.value)" placeholder="Cari ID, user..." class="w-full bg-black/60 border border-gray-800 rounded-full pl-8 pr-3 py-1.5 text-[11px] sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold/60" />
+          <input type="text" id="admin-global-search" oninput="handleAdminSearch(this.value)" placeholder="Cari ID, user..." class="w-full bg-black/70 border border-gray-800 rounded-full pl-8 pr-3 py-1.5 text-[11px] sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-gold/60 backdrop-blur-sm" />
         </div>
 
         <div class="flex items-center space-x-2.5 sm:space-x-3 pl-1 sm:pl-3 sm:border-l sm:border-gray-800 shrink-0">
@@ -183,9 +229,9 @@
 
     <main class="flex-1 p-3 sm:p-5 md:p-8 space-y-4 sm:space-y-6 max-w-7xl w-full mx-auto">
       
-      <!-- 4 METRIC UTAMA -->
+      <!-- 4 TOP METRIC CARDS -->
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-        <div class="bg-cardBg border border-cardBorder p-3.5 sm:p-5 rounded-2xl flex items-center justify-between shadow-lg relative overflow-hidden group hover:border-gold/40 transition">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-gold/30 p-3.5 sm:p-5 rounded-2xl flex items-center justify-between shadow-xl relative overflow-hidden group hover:border-gold/60 transition">
           <div class="truncate">
             <span class="text-lg sm:text-2xl font-black text-white block leading-tight truncate" id="admin-stat-total-orders">0</span>
             <span class="text-[10px] sm:text-[11px] font-bold text-gray-400 tracking-wider uppercase mt-1 block">Orders</span>
@@ -195,7 +241,7 @@
           </div>
         </div>
 
-        <div class="bg-cardBg border border-cardBorder p-3.5 sm:p-5 rounded-2xl flex items-center justify-between shadow-lg relative overflow-hidden group hover:border-emerald-500/40 transition">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-emerald-500/30 p-3.5 sm:p-5 rounded-2xl flex items-center justify-between shadow-xl relative overflow-hidden group hover:border-emerald-500/60 transition">
           <div class="truncate">
             <span class="text-lg sm:text-2xl font-black text-emerald-400 block leading-tight truncate" id="admin-stat-total-robux">0 R$</span>
             <span class="text-[10px] sm:text-[11px] font-bold text-gray-400 tracking-wider uppercase mt-1 block">Robux Sold</span>
@@ -205,7 +251,7 @@
           </div>
         </div>
 
-        <div class="bg-cardBg border border-cardBorder p-3.5 sm:p-5 rounded-2xl flex items-center justify-between shadow-lg relative overflow-hidden group hover:border-purple-500/40 transition">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-purple-500/30 p-3.5 sm:p-5 rounded-2xl flex items-center justify-between shadow-xl relative overflow-hidden group hover:border-purple-500/60 transition">
           <div class="truncate">
             <span class="text-lg sm:text-2xl font-black text-gold block leading-tight truncate" id="admin-stat-total-income">Rp 0</span>
             <span class="text-[10px] sm:text-[11px] font-bold text-gray-400 tracking-wider uppercase mt-1 block">Income</span>
@@ -215,7 +261,7 @@
           </div>
         </div>
 
-        <div class="bg-gradient-to-br from-[#8C6D1F] via-gold to-yellow-500 p-3.5 sm:p-5 rounded-2xl flex items-center justify-between shadow-[0_0_20px_rgba(212,175,55,0.25)] text-black relative overflow-hidden">
+        <div class="bg-gradient-to-br from-[#8C6D1F] via-gold to-yellow-500 p-3.5 sm:p-5 rounded-2xl flex items-center justify-between shadow-[0_0_20px_rgba(212,175,55,0.35)] text-black relative overflow-hidden">
           <div class="truncate">
             <span class="text-lg sm:text-2xl font-black block leading-tight truncate" id="card-stat-discount">0% OFF</span>
             <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-wider mt-1 block">Mass Discount</span>
@@ -228,10 +274,10 @@
 
       <!-- TAB 1: KELOLA PESANAN -->
       <div id="tab-orders" class="space-y-4 sm:space-y-6">
-        <div class="bg-cardBg border border-cardBorder rounded-2xl p-3.5 sm:p-6 shadow-xl">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-gold/30 rounded-2xl p-3.5 sm:p-6 shadow-xl">
           <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-gray-800">
             <div>
-              <h3 class="text-xs sm:text-sm md:text-base font-black text-white uppercase tracking-wider">Recent Orders (Real-Time)</h3>
+              <h3 class="text-xs sm:text-sm md:text-base font-black text-white uppercase tracking-wider font-title">Recent Orders (Real-Time)</h3>
               <p class="text-[10px] sm:text-xs text-gray-400">Pantau transaksi, verifikasi bukti transfer QRIS dan ubah status.</p>
             </div>
             <span class="text-[10px] sm:text-xs font-bold text-gold bg-gold/10 px-2.5 sm:px-3 py-1 rounded-full border border-gold/30" id="total-orders-count">0 Pesanan</span>
@@ -243,34 +289,34 @@
       <!-- TAB 2: KELOLA STOK, HARGA, DISKON & JADWAL -->
       <div id="tab-stocks" class="hidden space-y-4 sm:space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-          <div class="bg-cardBg border border-red-500/40 p-3.5 sm:p-4 rounded-2xl space-y-2 shadow-lg">
+          <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-red-500/40 p-3.5 sm:p-4 rounded-2xl space-y-2 shadow-lg">
             <div class="flex items-center space-x-2 text-red-400">
               <i class="fa-solid fa-fire text-sm"></i>
               <h4 class="text-xs font-black uppercase tracking-wider">Diskon 4 Paket (Massal)</h4>
             </div>
             <p class="text-[10px] text-gray-400 leading-snug">Potong harga serentak & tampilkan persentase diskon di atas Paket Ekonomis index.</p>
             <div class="flex items-center gap-2 pt-1">
-              <input type="number" id="global-discount-input" min="0" max="99" placeholder="0" class="w-16 sm:w-20 bg-black border border-red-500/60 rounded-xl px-2.5 py-1.5 text-xs text-yellow-300 font-black text-center focus:outline-none focus:border-red-400" />
+              <input type="number" id="global-discount-input" min="0" max="99" placeholder="0" class="w-16 sm:w-20 bg-black/80 border border-red-500/60 rounded-xl px-2.5 py-1.5 text-xs text-yellow-300 font-black text-center focus:outline-none focus:border-red-400" />
               <span class="text-xs font-bold text-red-300">%</span>
               <button onclick="saveGlobalDiscount()" class="flex-1 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black py-2 rounded-xl transition shadow">Terapkan</button>
               <button onclick="resetGlobalDiscount()" class="text-gray-400 hover:text-white text-[10px] font-bold px-1.5">Reset</button>
             </div>
           </div>
 
-          <div class="bg-cardBg border border-gold/40 p-3.5 sm:p-4 rounded-2xl space-y-2 shadow-lg">
+          <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-gold/40 p-3.5 sm:p-4 rounded-2xl space-y-2 shadow-lg">
             <div class="flex items-center space-x-2 text-gold">
               <i class="fa-solid fa-calendar-check text-sm"></i>
               <h4 class="text-xs font-black uppercase tracking-wider">Jadwal Restok (4 Kategori)</h4>
             </div>
             <p class="text-[10px] text-gray-400 leading-snug">Tentukan tanggal rilis permanen untuk seluruh kategori.</p>
             <div class="flex items-center gap-1.5 pt-1">
-              <input type="date" id="schedule-date-all" value="2040-01-27" class="bg-black border border-gold/60 rounded-xl px-2 py-1 text-xs text-white font-bold flex-1 focus:outline-none focus:border-gold min-w-0" />
+              <input type="date" id="schedule-date-all" value="2040-01-27" class="bg-black/80 border border-gold/60 rounded-xl px-2 py-1 text-xs text-white font-bold flex-1 focus:outline-none focus:border-gold min-w-0" />
               <button onclick="saveAllTiersSchedule()" class="bg-gold hover:bg-yellow-400 text-black text-[10px] font-black px-3 py-2 rounded-xl transition">Set</button>
               <button onclick="clearAllTiersSchedule()" class="text-red-400 hover:underline text-[10px] font-bold px-1">Hapus</button>
             </div>
           </div>
 
-          <div class="bg-cardBg border border-emerald-500/40 p-3.5 sm:p-4 rounded-2xl space-y-2 shadow-lg">
+          <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-emerald-500/40 p-3.5 sm:p-4 rounded-2xl space-y-2 shadow-lg">
             <div class="flex items-center space-x-2 text-emerald-400">
               <i class="fa-solid fa-boxes-stacked text-sm"></i>
               <h4 class="text-xs font-black uppercase tracking-wider">Kontrol Stok Massal</h4>
@@ -284,7 +330,7 @@
           </div>
         </div>
 
-        <div class="bg-cardBg border border-blue-500/40 p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-blue-500/40 p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow">
           <div class="flex items-center space-x-2">
             <i class="fa-solid fa-clock text-blue-400 text-base"></i>
             <div>
@@ -294,61 +340,63 @@
           </div>
           <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <span class="text-[10px] text-gray-400 font-bold">Buka:</span>
-            <input type="time" id="store-open-input" value="18:00" class="bg-black border border-gray-700 rounded-lg px-2 py-1 text-xs text-white font-bold" />
+            <input type="time" id="store-open-input" value="18:00" class="bg-black/80 border border-gray-700 rounded-lg px-2 py-1 text-xs text-white font-bold" />
             <span class="text-[10px] text-gray-400 font-bold">Tutup:</span>
-            <input type="time" id="store-close-input" value="23:00" class="bg-black border border-gray-700 rounded-lg px-2 py-1 text-xs text-white font-bold" />
+            <input type="time" id="store-close-input" value="23:00" class="bg-black/80 border border-gray-700 rounded-lg px-2 py-1 text-xs text-white font-bold" />
             <button onclick="saveStoreHours()" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black px-4 py-1.5 rounded-lg shadow ml-auto sm:ml-0">Simpan</button>
           </div>
         </div>
 
-        <div class="bg-cardBg border border-gold/40 p-3.5 sm:p-5 rounded-2xl space-y-3">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-gold/40 p-3.5 sm:p-5 rounded-2xl space-y-3">
           <h4 class="text-xs sm:text-sm font-bold text-gold uppercase flex items-center gap-1.5"><i class="fa-solid fa-cart-shopping"></i> 1. Kategori Paket Ekonomis</h4>
           <div id="stock-group-ekonomis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3"></div>
         </div>
 
-        <div class="bg-cardBg border border-emerald-500/40 p-3.5 sm:p-5 rounded-2xl space-y-3">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-emerald-500/40 p-3.5 sm:p-5 rounded-2xl space-y-3">
           <h4 class="text-xs sm:text-sm font-bold text-emerald-400 uppercase flex items-center gap-1.5"><i class="fa-solid fa-crown"></i> 2. Kategori Paket Sultan</h4>
           <div id="stock-group-sultan" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3"></div>
         </div>
 
-        <div class="bg-cardBg border border-purple-500/40 p-3.5 sm:p-5 rounded-2xl space-y-3">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-purple-500/40 p-3.5 sm:p-5 rounded-2xl space-y-3">
           <h4 class="text-xs sm:text-sm font-bold text-purple-400 uppercase flex items-center gap-1.5"><i class="fa-solid fa-gem"></i> 3. Kategori Paket CEO</h4>
           <div id="stock-group-ceo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3"></div>
         </div>
 
-        <div class="bg-cardBg border border-red-500/70 p-3.5 sm:p-5 rounded-2xl space-y-3 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-red-500/70 p-3.5 sm:p-5 rounded-2xl space-y-3 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
           <h4 class="text-xs sm:text-sm font-bold text-red-400 uppercase flex items-center gap-1.5"><i class="fa-solid fa-landmark text-red-500"></i> 4. Kategori Paket Pejabat</h4>
           <div id="stock-group-pejabat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3"></div>
         </div>
       </div>
 
-      <!-- TAB 3: MARKETING SOSMED (UPLOAD FILE POSTER IDENTIK QRIS DENGAN PENYIMPANAN SUPABASE PERMANEN) -->
+      <!-- TAB 3: MARKETING SOSMED (UPLOAD & UNDUH POSTER PROMOSI TOKO) -->
       <div id="tab-marketing" class="hidden space-y-4 sm:space-y-6">
-        <div class="bg-cardBg border border-cardBorder p-4 sm:p-6 rounded-2xl shadow-xl space-y-4">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-gold/40 p-4 sm:p-6 rounded-2xl shadow-xl space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-800 pb-3">
             <div>
-              <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider flex items-center gap-2">
+              <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider flex items-center gap-2 font-title">
                 <i class="fa-solid fa-bullhorn text-pink-400"></i> Upload Poster Promosi Toko
               </h3>
-              <p class="text-xs text-gray-400 mt-0.5">Unggah gambar poster yang otomatis tersimpan permanen di Supabase.</p>
+              <p class="text-xs text-gray-400 mt-0.5">Unggah poster kustom untuk disimpan permanen di Supabase atau unduh gambar poster yang sedang aktif.</p>
             </div>
             <span class="px-3 py-1 text-xs font-bold rounded-lg bg-gold text-black shadow">Auto Synced</span>
           </div>
 
-          <!-- PRATINJAU POSTER & UPLOAD FILE IDENTIK SISTEM QRIS -->
+          <!-- PRATINJAU POSTER, UPLOAD & TOMBOL DOWNLOAD LANGSUNG -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             <div class="lg:col-span-6 flex flex-col items-center space-y-3">
-              <div class="bg-black/90 p-2 sm:p-3 rounded-2xl border-2 border-gold max-w-[360px] w-full shadow-2xl flex items-center justify-center">
+              <div class="bg-black/90 p-2 sm:p-3 rounded-2xl border-2 border-gold max-w-[360px] w-full shadow-[0_0_30px_rgba(212,175,55,0.25)] flex items-center justify-center">
                 <img id="admin-poster-preview" src="IMG_20260908_151721.jpg" alt="Poster Boost Store" class="w-full h-auto rounded-xl object-contain shadow" />
               </div>
               <input type="file" id="admin-poster-input" accept="image/*" class="w-full max-w-[360px] text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-gray-800 file:text-gold cursor-pointer" />
-              <div class="flex gap-2 w-full max-w-[360px]">
-                <button onclick="saveCustomPoster()" class="flex-1 bg-gradient-to-r from-gold to-yellow-500 text-black font-black py-2.5 rounded-xl text-xs uppercase tracking-wider hover:brightness-110 shadow-lg flex items-center justify-center gap-1.5">
+              
+              <div class="grid grid-cols-2 gap-2 w-full max-w-[360px]">
+                <button onclick="saveCustomPoster()" class="bg-gradient-to-r from-gold to-yellow-500 text-black font-black py-2.5 rounded-xl text-xs uppercase tracking-wider hover:brightness-110 shadow-lg flex items-center justify-center gap-1.5">
                   <i class="fa-solid fa-cloud-arrow-up"></i>
-                  <span>Simpan Poster</span>
+                  <span>Simpan</span>
                 </button>
-                <button onclick="previewPosterModal()" class="px-3.5 bg-gray-800 hover:bg-gray-700 text-gold border border-gold/40 rounded-xl text-xs font-bold">
-                  <i class="fa-solid fa-eye"></i>
+                <button onclick="downloadCurrentPoster()" class="bg-gradient-to-r from-emerald-500 to-emerald-400 text-black font-black py-2.5 rounded-xl text-xs uppercase tracking-wider hover:brightness-110 shadow-lg flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-download"></i>
+                  <span>Unduh Poster</span>
                 </button>
               </div>
             </div>
@@ -368,12 +416,12 @@
 
       <!-- TAB 4: QRIS (UPLOAD FILE QRIS TERSIMPAN PERMANEN DI SUPABASE) -->
       <div id="tab-qris" class="hidden max-w-xl mx-auto space-y-4">
-        <div class="bg-cardBg border border-cardBorder p-4 sm:p-6 rounded-2xl text-center space-y-4 shadow-xl">
+        <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-gold/40 p-4 sm:p-6 rounded-2xl text-center space-y-4 shadow-xl">
           <div>
-            <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider"><i class="fa-solid fa-qrcode mr-1.5"></i> QRIS Pembayaran Toko</h3>
+            <h3 class="text-sm sm:text-base font-black text-gold uppercase tracking-wider font-title"><i class="fa-solid fa-qrcode mr-1.5"></i> QRIS Pembayaran Toko</h3>
             <p class="text-xs text-gray-400 mt-1">Unggah gambar QRIS baru yang langsung tersimpan permanen di Supabase.</p>
           </div>
-          <div class="bg-white p-3 rounded-2xl inline-block border-2 border-gold max-w-[280px]">
+          <div class="bg-white p-3 rounded-2xl inline-block border-2 border-gold max-w-[280px] shadow-[0_0_25px_rgba(212,175,55,0.3)]">
             <img id="admin-qris-preview" src="qris-boost.jpeg" alt="QRIS Boost Store" class="w-full h-auto mx-auto rounded-xl object-contain qris-crisp" />
           </div>
           <input type="file" id="admin-qris-input" accept="image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-gray-800 file:text-gold cursor-pointer" />
@@ -384,11 +432,11 @@
       <!-- TAB 5: TESTIMONI -->
       <div id="tab-testimonials" class="hidden space-y-4">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="bg-cardBg border border-gold/40 p-4 rounded-2xl flex flex-col shadow">
+          <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-gold/40 p-4 rounded-2xl flex flex-col shadow-xl">
             <h4 class="text-xs font-bold text-gold uppercase pb-2 border-b border-gold/20 mb-3"><i class="fa-solid fa-crown text-yellow-400"></i> Ulasan Bintang 5</h4>
             <div id="admin-testi-list-5" class="space-y-3 overflow-y-auto max-h-[460px] pr-1"></div>
           </div>
-          <div class="bg-cardBg border border-cardBorder p-4 rounded-2xl flex flex-col shadow">
+          <div class="bg-[#0B0E17]/85 backdrop-blur-md border border-gray-800 p-4 rounded-2xl flex flex-col shadow-xl">
             <h4 class="text-xs font-bold text-gray-300 uppercase pb-2 border-b border-gray-800 mb-3"><i class="fa-solid fa-comment-dots text-blue-400"></i> Bintang 1 - 4</h4>
             <div id="admin-testi-list-low" class="space-y-3 overflow-y-auto max-h-[460px] pr-1"></div>
           </div>
@@ -397,7 +445,7 @@
 
       <!-- TAB 6: LIVE CHAT MULTI-ROOM (RESPONSIF MOBILE & DESKTOP) -->
       <div id="tab-chats" class="hidden flex flex-col md:grid md:grid-cols-3 gap-3 sm:gap-4 h-[580px]">
-        <div id="chat-rooms-container" class="w-full bg-cardBg border border-cardBorder rounded-2xl p-3 flex flex-col h-full overflow-hidden shadow">
+        <div id="chat-rooms-container" class="w-full bg-[#0B0E17]/85 backdrop-blur-md border border-gold/30 rounded-2xl p-3 flex flex-col h-full overflow-hidden shadow-xl">
           <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-800">
             <h4 class="text-xs font-black text-gold uppercase px-1">Daftar Chat Masuk</h4>
             <button onclick="renderChatRooms()" class="text-gray-400 hover:text-gold text-xs p-1" title="Muat ulang chat"><i class="fa-solid fa-rotate-right"></i></button>
@@ -405,7 +453,7 @@
           <div id="admin-chat-rooms" class="flex-1 overflow-y-auto space-y-1.5 pr-1"></div>
         </div>
 
-        <div id="chat-detail-container" class="hidden md:flex md:col-span-2 bg-cardBg border border-cardBorder rounded-2xl p-3 sm:p-4 flex-col h-full overflow-hidden shadow">
+        <div id="chat-detail-container" class="hidden md:flex md:col-span-2 bg-[#0B0E17]/85 backdrop-blur-md border border-gold/30 rounded-2xl p-3 sm:p-4 flex-col h-full overflow-hidden shadow-xl">
           <div class="flex justify-between items-center pb-2 mb-2 border-b border-gray-800 gap-2">
             <div class="flex items-center space-x-2 truncate">
               <button onclick="backToRoomListMobile()" class="md:hidden text-gold hover:text-white p-1 text-sm"><i class="fa-solid fa-arrow-left"></i></button>
@@ -423,11 +471,11 @@
               </button>
             </div>
           </div>
-          <div id="admin-active-messages" class="flex-1 overflow-y-auto space-y-2 p-2.5 sm:p-3 bg-black/50 rounded-xl border border-gray-900 text-xs mb-2">
+          <div id="admin-active-messages" class="flex-1 overflow-y-auto space-y-2 p-2.5 sm:p-3 bg-black/70 rounded-xl border border-gray-900 text-xs mb-2">
             <p class="text-gray-500 text-center py-16">Pilih salah satu sesi percakapan di samping untuk mulai membalas chat.</p>
           </div>
           <div id="admin-chat-input-bar" class="hidden flex gap-1.5 sm:gap-2 pt-1">
-            <input type="text" id="admin-reply-input" placeholder="Ketik balasan untuk pelanggan..." class="flex-1 bg-black border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold" onkeypress="if(event.key==='Enter') sendAdminChat()" />
+            <input type="text" id="admin-reply-input" placeholder="Ketik balasan untuk pelanggan..." class="flex-1 bg-black/80 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold" onkeypress="if(event.key==='Enter') sendAdminChat()" />
             <button onclick="sendAdminChat()" class="bg-emerald-500 hover:bg-emerald-400 text-black font-bold px-4 py-2 rounded-xl text-xs shrink-0">Kirim</button>
           </div>
         </div>
@@ -435,16 +483,16 @@
 
     </main>
 
-    <footer class="text-center text-xs text-gray-500 py-4 border-t border-gray-900 mt-auto">
+    <footer class="text-center text-xs text-gray-500 py-4 border-t border-gold/20 bg-[#050608]/90 mt-auto backdrop-blur-sm">
       &copy; 2026 BOOST STORE — Official Luxury Administration System
     </footer>
   </div>
 
   <div id="proof-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center p-3 z-50">
-    <div class="bg-[#0F121A] border border-gold/50 rounded-2xl max-w-md w-full p-4 relative text-center shadow-2xl">
+    <div class="bg-[#0E121B] border-2 border-gold/50 rounded-2xl max-w-md w-full p-4 relative text-center shadow-[0_0_35px_rgba(212,175,55,0.3)]">
       <button onclick="closeProofModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       <h3 id="proof-modal-title" class="text-xs font-black text-gold uppercase mb-2">Bukti Gambar</h3>
-      <div class="bg-black/70 p-2 rounded-xl border border-gray-800 mb-3 flex items-center justify-center min-h-[220px]">
+      <div class="bg-black/80 p-2 rounded-xl border border-gray-800 mb-3 flex items-center justify-center min-h-[220px]">
         <img id="proof-modal-img" src="" alt="Bukti Gambar" class="max-h-[350px] w-auto rounded-lg object-contain" />
       </div>
       <button onclick="closeProofModal()" class="bg-gold text-black font-bold px-5 py-1.5 rounded-lg text-xs uppercase">Tutup</button>
@@ -674,6 +722,14 @@
       reader.readAsDataURL(fileInput.files[0]);
     }
 
+    function downloadCurrentPoster() {
+      const img = document.getElementById('admin-poster-preview');
+      const link = document.createElement('a');
+      link.download = `POSTER_PROMOSI_BOOST_STORE_${Date.now()}.png`;
+      link.href = img.src;
+      link.click();
+    }
+
     function previewPosterModal() {
       const img = document.getElementById('admin-poster-preview');
       viewImageModal(img.src, 'Pratinjau Poster Boost Store');
@@ -777,7 +833,7 @@ Upgrade item, avatar & gamepass Roblox favoritmu sekarang juga!
         if(o.status === 'Dibatalkan') badgeColor = 'bg-red-900/40 text-red-400 border border-red-500';
 
         return `
-          <div class="bg-black/50 border border-gray-800/80 p-3 sm:p-4 rounded-xl space-y-2.5">
+          <div class="bg-black/70 border border-gray-800/80 p-3 sm:p-4 rounded-xl space-y-2.5 backdrop-blur-sm">
             <div class="flex justify-between items-center gap-1">
               <div>
                 <span class="font-black text-gold text-xs sm:text-sm">${o.id}</span>
@@ -827,14 +883,14 @@ Upgrade item, avatar & gamepass Roblox favoritmu sekarang juga!
       const starLowList = list.filter(t => t.rating < 5);
 
       box5.innerHTML = star5List.map(t => `
-        <div class="bg-black/60 border border-gold/30 p-2.5 rounded-xl text-xs space-y-1">
+        <div class="bg-black/70 border border-gold/30 p-2.5 rounded-xl text-xs space-y-1 backdrop-blur-sm">
           <div class="flex justify-between font-bold text-white"><span>${t.username}</span><span class="text-yellow-400">★★★★★</span></div>
           <p class="text-gray-300">${t.feedback || '(Tanpa teks)'}</p>
         </div>
       `).join('') || '<p class="text-gray-500 text-xs">Belum ada.</p>';
 
       boxLow.innerHTML = starLowList.map(t => `
-        <div class="bg-black/60 border border-gray-800 p-2.5 rounded-xl text-xs space-y-1">
+        <div class="bg-black/70 border border-gray-800 p-2.5 rounded-xl text-xs space-y-1 backdrop-blur-sm">
           <div class="flex justify-between font-bold text-white"><span>${t.username}</span><span class="text-gray-400">Rating: ${t.rating}★</span></div>
           <p class="text-gray-300">${t.feedback || '(Tanpa teks)'}</p>
         </div>
@@ -880,7 +936,7 @@ Upgrade item, avatar & gamepass Roblox favoritmu sekarang juga!
           const currentStatus = p.stock_status || (p.active !== false ? 'available' : 'out_of_stock');
           const discVal = Number(p.discount_percent) || 0;
           return `
-            <div class="bg-black/60 border border-gray-800 p-2.5 rounded-xl flex flex-col gap-2">
+            <div class="bg-black/70 border border-gray-800 p-2.5 rounded-xl flex flex-col gap-2 backdrop-blur-sm">
               <div class="flex justify-between items-center text-xs font-bold text-white">
                 <span>${p.robux} Robux</span>
                 <span class="text-yellow-400">Diskon: ${discVal}%</span>
@@ -942,7 +998,7 @@ Upgrade item, avatar & gamepass Roblox favoritmu sekarang juga!
       container.innerHTML = rooms.map(r => {
         const isSelected = activeAdminRoomId === r.session_id;
         return `
-          <div onclick="selectChatRoom('${r.session_id}')" class="p-2.5 rounded-xl cursor-pointer transition border ${isSelected ? 'bg-gold/20 border-gold' : 'bg-black/50 border-gray-800 hover:border-gray-600'}">
+          <div onclick="selectChatRoom('${r.session_id}')" class="p-2.5 rounded-xl cursor-pointer transition border ${isSelected ? 'bg-gold/20 border-gold' : 'bg-black/60 border-gray-800 hover:border-gray-600'}">
             <div class="flex justify-between items-center mb-0.5">
               <span class="font-bold text-white text-[11px] truncate"><i class="fa-solid fa-user text-gold text-[10px] mr-1"></i> ${r.username || 'Customer'}</span>
               <span class="text-[9px] px-1.5 py-0.2 rounded ${r.status === 'ended' ? 'bg-red-950 text-red-400' : 'bg-emerald-950 text-emerald-400'}">${r.status === 'ended' ? 'Selesai' : 'Aktif'}</span>
